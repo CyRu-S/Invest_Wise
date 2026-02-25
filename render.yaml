@@ -12,24 +12,5 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://invest-wise-frontend.onrender.com
+        value: https://invest-wise.vercel.app
     healthCheckPath: /api/health
-
-  # ---- Frontend: React Static Site ----
-  - type: web
-    name: invest-wise-frontend
-    runtime: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
-    plan: free
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: public, max-age=0, must-revalidate
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        value: https://invest-wise-backend.onrender.com/api
