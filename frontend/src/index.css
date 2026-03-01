@@ -98,6 +98,46 @@
   animation: bgShift2 25s ease-in-out infinite;
 }
 
+/* --- Spline 3D Chain Background --- */
+.spline-chain-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transform: scale(1.15);
+}
+
+.spline-chain-bg canvas,
+.spline-chain-bg > div {
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+}
+
+/* Ensure landing-page content sits above the Spline background */
+#landing-page > section,
+#landing-page > .spline-chain-bg + section {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure footer is interactive above the Spline background */
+.site-footer,
+footer {
+  position: relative;
+  z-index: 10;
+  background: transparent;
+}
+
+.footer-magic-card {
+  border-radius: var(--radius-xl) !important;
+  padding: 2rem !important;
+}
+
 :root {
   /* Color Palette — Dark Mode */
   --bg-primary: #0a0e1a;

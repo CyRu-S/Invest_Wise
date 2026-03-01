@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, TrendingUp, Shield, Wallet, CheckCircle2, Star, Zap, Globe, Users, Link as LinkIcon } from 'lucide-react';
 import { MagicCard, MagicGrid } from '../components/MagicCard';
+import SplineChainBackground from '../components/SplineChainBackground';
 
 export default function LandingPage() {
   return (
     <div id="landing-page" className="min-h-screen relative bg-transparent text-foreground selection:bg-primary/20">
+
+      {/* Spline 3D Chain Background */}
+      <SplineChainBackground />
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 relative">
