@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -25,12 +25,14 @@ function ProtectedRoute({ children, roles }) {
 
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+  const isAuthPage = ['/login', '/register'].includes(location.pathname);
 
   if (loading) return <div className="loading-spinner" style={{ minHeight: '100vh' }}><div className="spinner"></div></div>;
 
   return (
     <>
-      <Navbar />
+      {!isAuthPage && <Navbar />}
       <Routes>
         {/* Public */}
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
@@ -50,7 +52,7 @@ function AppRoutes() {
         {/* Default */}
         <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} />} />
       </Routes>
-      <Footer />
+      {!isAuthPage && <Footer />}
     </>
   );
 }

@@ -2,17 +2,35 @@ import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight, TrendingUp, Shield, Wallet, CheckCircle2, Star, Zap, Globe, Users, Link as LinkIcon } from 'lucide-react';
 import { MagicCard, MagicGrid } from '../components/MagicCard';
 import SplineChainBackground from '../components/SplineChainBackground';
+import Particles from '../components/Particles';
+import GlassSurface from '../components/GlassSurface';
+import DecryptedText from '../components/DecryptedText';
 
 export default function LandingPage() {
   return (
     <div id="landing-page" className="min-h-screen relative bg-transparent text-foreground selection:bg-primary/20">
+
+      {/* Particles Overlay */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none', width: '100%', height: '100vh' }}>
+        <Particles
+          particleColors={["#ffffff"]}
+          particleCount={300}
+          particleSpread={10}
+          speed={0.2}
+          particleBaseSize={150}
+          moveParticlesOnHover={false}
+          alphaParticles
+          disableRotation
+          pixelRatio={1}
+        />
+      </div>
 
       {/* Spline 3D Chain Background */}
       <SplineChainBackground />
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 relative">
-        <div className="max-w-7xl mx-auto text-center relative z-10">
+        <div className="max-w-7xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 hover:glow-blue transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm text-foreground/80">
@@ -23,24 +41,66 @@ export default function LandingPage() {
           <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-[1.1] tracking-tight animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
             Invest Smarter with
             <br />
-            <span className="gradient-text">Intelligent Insights</span>
+            <span className="gradient-text">
+              <DecryptedText
+                text="Intelligent Insights"
+                animateOn="view"
+                revealDirection="start"
+                sequential
+                useOriginalCharsOnly={false}
+              />
+            </span>
           </h1>
 
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
             InvestWise helps you track your mutual funds, analyze risk, and discover top-performing opportunities using advanced analytics.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
-            <Link to="/register">
-              <button className="bg-primary hover:bg-primary/90 text-white px-8 h-14 text-lg rounded-full glow-blue transition-all hover:scale-105 inline-flex items-center gap-2 font-semibold">
-                Start Investing Now
-                <ArrowRight className="w-5 h-5" />
-              </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Link to="/register" className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 block">
+              <GlassSurface
+                width={240}
+                height={56}
+                borderRadius={28}
+                borderWidth={0.07}
+                blur={11}
+                brightness={50}
+                opacity={0.93}
+                displace={0.5}
+                distortionScale={-180}
+                redOffset={0}
+                greenOffset={10}
+                blueOffset={20}
+                mixBlendMode="screen"
+                className="group glow-blue hover:scale-105 transition-all duration-300"
+              >
+                <div className="flex items-center justify-center gap-2 text-white font-semibold text-lg w-full h-full">
+                  Start Investing Now
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </GlassSurface>
             </Link>
-            <Link to="/funds">
-              <button className="px-8 h-14 text-lg rounded-full border border-primary/20 bg-background/50 backdrop-blur-sm hover:bg-primary/10 transition-all hover:scale-105 text-foreground font-semibold">
-                Explore Funds
-              </button>
+            <Link to="/funds" className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 block">
+              <GlassSurface
+                width={200}
+                height={56}
+                borderRadius={28}
+                borderWidth={0.07}
+                blur={11}
+                brightness={50}
+                opacity={0.93}
+                displace={0.5}
+                distortionScale={-180}
+                redOffset={0}
+                greenOffset={10}
+                blueOffset={20}
+                mixBlendMode="screen"
+                className="hover:scale-105 transition-all duration-300"
+              >
+                <div className="flex items-center justify-center w-full h-full text-foreground/90 font-semibold text-lg">
+                  Explore Funds
+                </div>
+              </GlassSurface>
             </Link>
           </div>
         </div>
@@ -88,7 +148,7 @@ export default function LandingPage() {
                       Updated just now
                     </p>
                   </div>
-                  <div className="relative z-10 mt-auto">
+                  <div className="relative z-10 mt-2">
                     <Link to="/funds" className="w-full inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25 border border-white/10 rounded-lg px-4 py-2 font-semibold transition-colors">
                       Invest Now
                     </Link>
