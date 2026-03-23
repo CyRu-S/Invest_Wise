@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="18" fill="#090E1D"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" stroke="url(#border)" stroke-opacity="0.45"/>
+  <path d="M32 11L45.5 24L32 53L18.5 24L32 11Z" fill="url(#gem)"/>
+  <path d="M32 11L18.5 24H45.5L32 11Z" fill="#A5B4FC" fill-opacity="0.95"/>
+  <path d="M32 11L24 24L32 53L40 24L32 11Z" fill="#7C3AED" fill-opacity="0.55"/>
+  <path d="M21.5 38.5L28.5 31.5L33 36L42 25.5" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="42" cy="25.5" r="3.2" fill="#FDE68A"/>
+  <defs>
+    <linearGradient id="gem" x1="18.5" y1="11" x2="45.5" y2="53" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="0.55" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="border" x1="8" y1="6" x2="54" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -87,29 +87,56 @@ const GlassSurface = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
+
     const resizeObserver = new ResizeObserver(() => {
       setTimeout(updateDisplacementMap, 0);
     });
+
     resizeObserver.observe(containerRef.current);
+
     return () => {
       resizeObserver.disconnect();
     };
   }, []);
 
   useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      setTimeout(updateDisplacementMap, 0);
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    setTimeout(updateDisplacementMap, 0);
+  }, [width, height]);
+
+  useEffect(() => {
     setSvgSupported(supportsSVGFilters());
   }, []);
 
   const supportsSVGFilters = () => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return false;
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return false;
+    }
+
+    const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    const isFirefox = /Firefox/.test(navigator.userAgent);
+
+    if (isWebkit || isFirefox) {
+      return false;
+    }
+
     const div = document.createElement('div');
-    // Check standard and webkit prefixes
     div.style.backdropFilter = `url(#${filterId})`;
-    const standardSupported = div.style.backdropFilter !== '';
-    div.style.WebkitBackdropFilter = `url(#${filterId})`;
-    const webkitSupported = div.style.WebkitBackdropFilter !== '';
-    
-    return standardSupported || webkitSupported;
+
+    return div.style.backdropFilter !== '';
   };
 
   const containerStyle = {

@@ -3,8 +3,50 @@ import { Sparkles, ArrowRight, TrendingUp, Shield, Wallet, CheckCircle2, Star, Z
 import { MagicCard, MagicGrid } from '../components/MagicCard';
 import SplineChainBackground from '../components/SplineChainBackground';
 import Particles from '../components/Particles';
-import GlassSurface from '../components/GlassSurface';
 import DecryptedText from '../components/DecryptedText';
+
+function LandingButton({
+  to,
+  variant = 'primary',
+  className = '',
+  children
+}) {
+  const base = 'group relative rounded-2xl backdrop-blur-xl border-2 bg-gradient-to-br shadow-2xl hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all duration-500 ease-out overflow-hidden inline-flex items-center justify-center gap-2 px-6 py-3.5 font-semibold';
+
+  const variants = {
+    primary: 'from-indigo-900/40 via-black/60 to-black/80 border-indigo-500/30 hover:border-indigo-400/60 hover:shadow-indigo-500/30 text-white',
+    secondary: 'from-purple-900/30 via-black/60 to-black/80 border-purple-500/25 hover:border-purple-400/50 hover:shadow-purple-500/25 text-foreground/90',
+    compact: 'from-indigo-900/30 via-black/60 to-black/80 border-indigo-500/25 hover:border-indigo-400/50 hover:shadow-indigo-500/20 text-foreground/90',
+  };
+
+  const shineColor = {
+    primary: 'via-indigo-400/30',
+    secondary: 'via-purple-400/20',
+    compact: 'via-indigo-400/20',
+  };
+
+  const glowColor = {
+    primary: 'from-indigo-500/10 via-indigo-400/20 to-indigo-500/10',
+    secondary: 'from-purple-500/8 via-purple-400/15 to-purple-500/8',
+    compact: 'from-indigo-500/8 via-indigo-400/15 to-indigo-500/8',
+  };
+
+  return (
+    <Link
+      to={to}
+      className={`${base} ${variants[variant]} ${className}`}
+    >
+      {/* Shine sweep on hover */}
+      <div className={`absolute inset-0 bg-gradient-to-r from-transparent ${shineColor[variant]} to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out`} />
+      {/* Hover glow overlay */}
+      <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${glowColor[variant]} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+      {/* Content */}
+      <span className="relative z-10 flex items-center justify-center gap-2">
+        {children}
+      </span>
+    </Link>
+  );
+}
 
 export default function LandingPage() {
   return (
@@ -56,52 +98,23 @@ export default function LandingPage() {
             InvestWise helps you track your mutual funds, analyze risk, and discover top-performing opportunities using advanced analytics.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link to="/register" className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 block">
-              <GlassSurface
-                width={240}
-                height={56}
-                borderRadius={28}
-                borderWidth={0.07}
-                blur={11}
-                brightness={50}
-                opacity={0.93}
-                displace={0.5}
-                distortionScale={-180}
-                redOffset={0}
-                greenOffset={10}
-                blueOffset={20}
-                mixBlendMode="screen"
-                className="group glow-blue hover:scale-105 transition-all duration-300"
-              >
-                <div className="flex items-center justify-center gap-2 text-white font-semibold text-lg w-full h-full">
-                  Start Investing Now
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </GlassSurface>
-            </Link>
-            <Link to="/funds" className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 block">
-              <GlassSurface
-                width={200}
-                height={56}
-                borderRadius={28}
-                borderWidth={0.07}
-                blur={11}
-                brightness={50}
-                opacity={0.93}
-                displace={0.5}
-                distortionScale={-180}
-                redOffset={0}
-                greenOffset={10}
-                blueOffset={20}
-                mixBlendMode="screen"
-                className="hover:scale-105 transition-all duration-300"
-              >
-                <div className="flex items-center justify-center w-full h-full text-foreground/90 font-semibold text-lg">
-                  Explore Funds
-                </div>
-              </GlassSurface>
-            </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+            <LandingButton
+              to="/register"
+              variant="primary"
+              className="text-lg min-w-[240px] rounded-full"
+            >
+              Start Investing Now
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </LandingButton>
+
+            <LandingButton
+              to="/funds"
+              variant="secondary"
+              className="text-lg min-w-[200px] rounded-full"
+            >
+              Explore Funds
+            </LandingButton>
           </div>
         </div>
 
@@ -148,10 +161,15 @@ export default function LandingPage() {
                       Updated just now
                     </p>
                   </div>
-                  <div className="relative z-10 mt-2">
-                    <Link to="/funds" className="w-full inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25 border border-white/10 rounded-lg px-4 py-2 font-semibold transition-colors">
+                  <div className="mt-10">
+                    <LandingButton
+                      to="/funds"
+                      variant="primary"
+                      className="text-sm w-full rounded-xl py-2.5"
+                    >
                       Invest Now
-                    </Link>
+                      <ArrowRight className="w-4 h-4" />
+                    </LandingButton>
                   </div>
                 </MagicCard>
 
@@ -159,9 +177,13 @@ export default function LandingPage() {
                 <MagicCard className="glass-card p-6 rounded-xl border-white/5 bg-black/50" enableStars={true}>
                   <div className="flex items-center justify-between mb-6 relative z-10">
                     <h4 className="text-sm font-semibold text-white">Recent Activity</h4>
-                    <button className="h-6 w-6 text-muted-foreground hover:text-white inline-flex items-center justify-center">
+                    <LandingButton
+                      to="/portfolio"
+                      variant="compact"
+                      className="!p-2 !rounded-xl text-muted-foreground hover:text-white"
+                    >
                       <ArrowRight className="w-4 h-4" />
-                    </button>
+                    </LandingButton>
                   </div>
                   <div className="space-y-4 relative z-10">
                     {[
@@ -284,11 +306,14 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-10">
-                <Link to="/funds">
-                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-foreground font-semibold">
-                    View All Funds <ArrowRight className="w-4 h-4" />
-                  </button>
-                </Link>
+                <LandingButton
+                  to="/funds"
+                  variant="secondary"
+                  className="text-sm"
+                >
+                  View All Funds
+                  <ArrowRight className="w-4 h-4" />
+                </LandingButton>
               </div>
             </div>
 
@@ -374,16 +399,21 @@ export default function LandingPage() {
                 Join thousands of investors who are taking control of their financial future with InvestWise.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link to="/register">
-                  <button className="bg-white text-black hover:bg-white/90 w-full sm:w-auto text-lg h-12 px-8 rounded-lg font-semibold transition-colors">
-                    Create Free Account
-                  </button>
-                </Link>
-                <Link to="/login">
-                  <button className="w-full sm:w-auto text-lg h-12 px-8 rounded-lg border border-white/20 hover:bg-white/10 text-foreground font-semibold transition-colors">
-                    Sign In
-                  </button>
-                </Link>
+                <LandingButton
+                  to="/register"
+                  variant="primary"
+                  className="w-full sm:w-auto sm:min-w-[220px] text-base"
+                >
+                  Create Free Account
+                </LandingButton>
+
+                <LandingButton
+                  to="/login"
+                  variant="secondary"
+                  className="w-full sm:w-auto sm:min-w-[170px] text-base"
+                >
+                  Sign In
+                </LandingButton>
               </div>
             </div>
           </MagicCard>

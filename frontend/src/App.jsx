@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import WebsiteLoader from './components/WebsiteLoader';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -27,11 +29,20 @@ function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
   const isAuthPage = ['/login', '/register'].includes(location.pathname);
+  const useDoodleBackground = !['/', '/login', '/register'].includes(location.pathname);
+
+  useEffect(() => {
+    document.body.classList.toggle('app-body--doodles', useDoodleBackground);
+
+    return () => {
+      document.body.classList.remove('app-body--doodles');
+    };
+  }, [useDoodleBackground]);
 
   if (loading) return <div className="loading-spinner" style={{ minHeight: '100vh' }}><div className="spinner"></div></div>;
 
   return (
-    <>
+    <div className={`app-shell ${useDoodleBackground ? 'app-shell--doodles' : ''}`}>
       {!isAuthPage && <Navbar />}
       <Routes>
         {/* Public */}
@@ -53,15 +64,18 @@ function AppRoutes() {
         <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} />} />
       </Routes>
       {!isAuthPage && <Footer />}
-    </>
+    </div>
   );
 }
 
 export default function App() {
+  const [showLoader, setShowLoader] = useState(true);
+
   return (
     <BrowserRouter>
       <AuthProvider>
         <ClickSpark sparkColor="#818cf8" sparkSize={12} sparkRadius={20} sparkCount={10} duration={500} />
+        {showLoader && <WebsiteLoader onFinished={() => setShowLoader(false)} />}
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>

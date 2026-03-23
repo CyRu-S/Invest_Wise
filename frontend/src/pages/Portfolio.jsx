@@ -1,5 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowUpRight,
+  Briefcase,
+  CalendarClock,
+  CreditCard,
+  Landmark,
+  PieChart,
+  TrendingUp,
+  Wallet,
+} from 'lucide-react';
+import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
+import './PortfolioPage.css';
 import api from '../services/api';
+
+function formatCurrency(value, fallback = '₹0') {
+  if (value === null || value === undefined || value === '') return fallback;
+  return `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+}
+
+function formatCompactCurrency(value) {
+  if (!value) return '₹0';
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    notation: 'compact',
+    maximumFractionDigits: 2,
+  }).format(Number(value));
+}
+
+function formatPercent(value, fallback = 'N/A') {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return fallback;
+  return `${Number(value).toFixed(2)}%`;
+}
+
+function formatTransactionDate(value) {
+  if (!value) return 'Pending';
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value));
+}
 
 export default function Portfolio() {
   const [holdings, setHoldings] = useState([]);
@@ -11,171 +52,387 @@ export default function Portfolio() {
   const [sellAmount, setSellAmount] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  useEffect(() => {
-    Promise.all([
-      api.get('/transactions/portfolio'),
-      api.get('/transactions/history'),
-      api.get('/investor/profile')
-    ]).then(([h, t, p]) => {
-      setHoldings(h.data);
-      setTransactions(t.data);
-      setProfile(p.data);
-    }).catch(console.error).finally(() => setLoading(false));
-  }, []);
+  const loadPortfolio = async () => {
+    setLoading(true);
 
-  const handleSell = async () => {
-    if (!sellAmount || Number(sellAmount) <= 0) return;
-    setMessage({ type: '', text: '' });
     try {
-      const res = await api.post('/transactions/sell', { fundId: sellModal.fundId, amount: Number(sellAmount) });
-      setMessage({ type: 'success', text: res.data.message });
-      setSellModal(null);
-      setSellAmount('');
-      // Refresh
-      const [h, t, p] = await Promise.all([
+      const [portfolioResponse, historyResponse, profileResponse] = await Promise.all([
         api.get('/transactions/portfolio'),
         api.get('/transactions/history'),
-        api.get('/investor/profile')
+        api.get('/investor/profile'),
       ]);
-      setHoldings(h.data);
-      setTransactions(t.data);
-      setProfile(p.data);
-    } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Sell failed' });
+
+      setHoldings(portfolioResponse.data);
+      setTransactions(historyResponse.data);
+      setProfile(profileResponse.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const totalValue = holdings.reduce((sum, h) => sum + Number(h.currentValue), 0);
-  const totalInvested = holdings.reduce((sum, h) => sum + (Number(h.unitsOwned) * Number(h.averageBuyPrice)), 0);
-  const totalPnL = totalValue - totalInvested;
+  useEffect(() => {
+    loadPortfolio();
+  }, []);
 
-  if (loading) return <div className="page-container"><div className="loading-spinner"><div className="spinner"></div></div></div>;
+  const handleSell = async () => {
+    if (!sellAmount || Number(sellAmount) <= 0 || !sellModal) return;
 
-  return (
-    <div className="page-container" id="portfolio-page">
-      <div className="page-header">
-        <h1>My Portfolio</h1>
-        <p>Track your investments and transaction history</p>
-      </div>
+    setMessage({ type: '', text: '' });
 
-      {message.text && <div className={message.type === 'success' ? 'success-message' : 'error-message'}>{message.text}</div>}
+    try {
+      const response = await api.post('/transactions/sell', {
+        fundId: sellModal.fundId,
+        amount: Number(sellAmount),
+      });
 
-      {/* Summary Stats */}
-      <div className="grid-4" style={{ marginBottom: '2rem' }}>
-        <div className="glass-card stat-card">
-          <div className="stat-label">Wallet Balance</div>
-          <div className="stat-value">₹{profile ? Number(profile.walletBalance).toLocaleString('en-IN') : '0'}</div>
-        </div>
-        <div className="glass-card stat-card">
-          <div className="stat-label">Portfolio Value</div>
-          <div className="stat-value">₹{totalValue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
-        </div>
-        <div className="glass-card stat-card">
-          <div className="stat-label">Total Invested</div>
-          <div className="stat-value">₹{totalInvested.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
-        </div>
-        <div className="glass-card stat-card">
-          <div className="stat-label">Profit / Loss</div>
-          <div className={`stat-value ${totalPnL >= 0 ? 'positive' : 'negative'}`}
-            style={{ color: totalPnL >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' }}>
-            {totalPnL >= 0 ? '+' : ''}₹{totalPnL.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+      setMessage({ type: 'success', text: response.data.message });
+      setSellModal(null);
+      setSellAmount('');
+      await loadPortfolio();
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Sell failed',
+      });
+    }
+  };
+
+  const {
+    totalValue,
+    totalInvested,
+    totalPnL,
+    totalPnLPercent,
+    bestHolding,
+    totalUnits,
+  } = useMemo(() => {
+    const portfolioValue = holdings.reduce((sum, holding) => sum + Number(holding.currentValue || 0), 0);
+    const investedValue = holdings.reduce(
+      (sum, holding) => sum + Number(holding.unitsOwned || 0) * Number(holding.averageBuyPrice || 0),
+      0
+    );
+    const pnl = portfolioValue - investedValue;
+    const pnlPercent = investedValue > 0 ? (pnl / investedValue) * 100 : 0;
+    const units = holdings.reduce((sum, holding) => sum + Number(holding.unitsOwned || 0), 0);
+
+    const standoutHolding = holdings.reduce((best, holding) => {
+      const holdingPnl = Number(holding.currentValue || 0) - Number(holding.unitsOwned || 0) * Number(holding.averageBuyPrice || 0);
+      if (!best) return { ...holding, pnl: holdingPnl };
+      return holdingPnl > best.pnl ? { ...holding, pnl: holdingPnl } : best;
+    }, null);
+
+    return {
+      totalValue: portfolioValue,
+      totalInvested: investedValue,
+      totalPnL: pnl,
+      totalPnLPercent: pnlPercent,
+      bestHolding: standoutHolding,
+      totalUnits: units,
+    };
+  }, [holdings]);
+
+  const recentTransactions = useMemo(
+    () => transactions.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+    [transactions]
+  );
+
+  if (loading) {
+    return (
+      <div className="page-container portfolio-page">
+        <div className="portfolio-loading-shell">
+          <div className="loading-spinner">
+            <div className="spinner" />
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-        <button className={`btn ${tab === 'holdings' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setTab('holdings')}>
-          Holdings ({holdings.length})
+  return (
+    <div className="page-container portfolio-page" id="portfolio-page">
+
+      <section className="portfolio-hero">
+        <div className="portfolio-hero__copy">
+          <span className="portfolio-hero__kicker">
+            <Briefcase size={16} />
+            Investor Portfolio
+          </span>
+          <h1>Your capital, performance, and activity in one place.</h1>
+          <p>
+            Review live value, understand how much is invested, and take action on each holding
+            without dropping into plain tables.
+          </p>
+        </div>
+
+        <div className="portfolio-hero__summary">
+          <div className="portfolio-hero__stat portfolio-hero__stat--indigo">
+            <span>Wallet balance</span>
+            <strong>{formatCurrency(profile?.walletBalance)}</strong>
+          </div>
+          <div className="portfolio-hero__stat portfolio-hero__stat--indigo">
+            <span>Portfolio value</span>
+            <strong>{formatCurrency(totalValue)}</strong>
+          </div>
+          <div className="portfolio-hero__stat portfolio-hero__stat--indigo">
+            <span>Total invested</span>
+            <strong>{formatCurrency(totalInvested)}</strong>
+          </div>
+          <div className="portfolio-hero__stat portfolio-hero__stat--indigo">
+            <span>P/L</span>
+            <strong className={totalPnL >= 0 ? 'is-positive' : 'is-negative'}>
+              {totalPnL >= 0 ? '+' : ''}
+              {formatCurrency(totalPnL, '₹0')}
+            </strong>
+            <small>{totalInvested > 0 ? formatPercent(totalPnLPercent) : 'No invested capital yet'}</small>
+          </div>
+        </div>
+      </section>
+
+      {message.text && (
+        <div className={message.type === 'success' ? 'success-message' : 'error-message'}>
+          {message.text}
+        </div>
+      )}
+
+      <section className="portfolio-tabs" aria-label="Portfolio views">
+        <button
+          className={`portfolio-tab ${tab === 'holdings' ? 'is-active' : ''}`}
+          onClick={() => setTab('holdings')}
+        >
+          Holdings
+          <span>{holdings.length}</span>
         </button>
-        <button className={`btn ${tab === 'transactions' ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setTab('transactions')}>
-          Transactions ({transactions.length})
+        <button
+          className={`portfolio-tab ${tab === 'transactions' ? 'is-active' : ''}`}
+          onClick={() => setTab('transactions')}
+        >
+          Transactions
+          <span>{transactions.length}</span>
         </button>
-      </div>
+      </section>
 
       {tab === 'holdings' && (
-        <div className="glass-card" style={{ overflow: 'auto' }}>
-          {holdings.length === 0 ? (
-            <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>No holdings yet. Start investing!</p>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Fund</th>
-                  <th>Units</th>
-                  <th>Avg Price</th>
-                  <th>Current NAV</th>
-                  <th>Value</th>
-                  <th>P/L</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {holdings.map(h => {
-                  const pnl = Number(h.currentValue) - (Number(h.unitsOwned) * Number(h.averageBuyPrice));
-                  return (
-                    <tr key={h.holdingId}>
-                      <td>
-                        <strong>{h.fundName}</strong>
-                        <br /><span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{h.tickerSymbol}</span>
-                      </td>
-                      <td>{Number(h.unitsOwned).toFixed(4)}</td>
-                      <td>₹{Number(h.averageBuyPrice).toFixed(2)}</td>
-                      <td>₹{Number(h.currentNav).toFixed(2)}</td>
-                      <td>₹{Number(h.currentValue).toFixed(2)}</td>
-                      <td style={{ color: pnl >= 0 ? 'var(--accent-success)' : 'var(--accent-danger)' }}>
-                        {pnl >= 0 ? '+' : ''}₹{pnl.toFixed(2)}
-                      </td>
-                      <td>
-                        <button className="btn btn-danger btn-sm" onClick={() => setSellModal(h)}>Sell</button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <>
+          <MagicBentoGrid className="portfolio-grid" pattern="uniform">
+            <MagicBentoCard className="portfolio-card portfolio-card--overview portfolio-card--lead portfolio-card--full">
+              <div className="portfolio-card__header">
+                <span className="portfolio-card__eyebrow">Portfolio overview</span>
+                <span className="portfolio-card__badge">Live snapshot</span>
+              </div>
+              <div className="portfolio-card__body">
+                <h2>Keep your positions and liquidity in balance.</h2>
+                <p>
+                  Use this view to identify your strongest holding, track unrealized gains, and
+                  liquidate positions quickly when your allocation changes.
+                </p>
+              </div>
+              <div className="portfolio-overview-metrics">
+                <div className="portfolio-overview-metric">
+                  <span>Total units</span>
+                  <strong>{totalUnits.toFixed(4)}</strong>
+                </div>
+                <div className="portfolio-overview-metric">
+                  <span>Best contributor</span>
+                  <strong>{bestHolding?.tickerSymbol || 'No holdings yet'}</strong>
+                </div>
+                <div className="portfolio-overview-metric">
+                  <span>Largest gain</span>
+                  <strong className={bestHolding?.pnl >= 0 ? 'is-positive' : ''}>
+                    {bestHolding ? formatCompactCurrency(bestHolding.pnl) : '₹0'}
+                  </strong>
+                </div>
+                <div className="portfolio-overview-metric">
+                  <span>Cash available</span>
+                  <strong>{formatCompactCurrency(profile?.walletBalance)}</strong>
+                </div>
+              </div>
+            </MagicBentoCard>
+
+            {holdings.length === 0 ? (
+              <MagicBentoCard className="portfolio-card portfolio-card--empty portfolio-card--full">
+                <div className="portfolio-card__body">
+                  <h3>No holdings yet</h3>
+                  <p>Start investing from the fund explorer and your positions will appear here.</p>
+                </div>
+              </MagicBentoCard>
+            ) : (
+              holdings.map((holding) => {
+                const pnl =
+                  Number(holding.currentValue || 0) -
+                  Number(holding.unitsOwned || 0) * Number(holding.averageBuyPrice || 0);
+                const pnlPercent =
+                  Number(holding.unitsOwned || 0) * Number(holding.averageBuyPrice || 0) > 0
+                    ? (pnl / (Number(holding.unitsOwned || 0) * Number(holding.averageBuyPrice || 0))) * 100
+                    : 0;
+
+                return (
+                  <MagicBentoCard key={holding.holdingId} className="portfolio-card">
+                    <div className="portfolio-card__header">
+                      <div className="portfolio-card__title-block">
+                        <span className="portfolio-card__eyebrow">{holding.tickerSymbol}</span>
+                        <h3>{holding.fundName}</h3>
+                      </div>
+                      <button
+                        className="portfolio-card__sell"
+                        onClick={() => setSellModal(holding)}
+                      >
+                        Sell
+                      </button>
+                    </div>
+
+                    <div className="portfolio-holding-metrics">
+                      <div>
+                        <span>Value</span>
+                        <strong>{formatCurrency(holding.currentValue)}</strong>
+                      </div>
+                      <div>
+                        <span>Units</span>
+                        <strong>{Number(holding.unitsOwned || 0).toFixed(4)}</strong>
+                      </div>
+                      <div>
+                        <span>Avg buy</span>
+                        <strong>{formatCurrency(holding.averageBuyPrice)}</strong>
+                      </div>
+                      <div>
+                        <span>Current NAV</span>
+                        <strong>{formatCurrency(holding.currentNav)}</strong>
+                      </div>
+                    </div>
+
+                    <div className="portfolio-card__footer">
+                      <div>
+                        <span>Unrealized P/L</span>
+                        <strong className={pnl >= 0 ? 'is-positive' : 'is-negative'}>
+                          {pnl >= 0 ? '+' : ''}
+                          {formatCurrency(pnl)}
+                        </strong>
+                      </div>
+                      <div>
+                        <span>Return</span>
+                        <strong className={pnlPercent >= 0 ? 'is-positive' : 'is-negative'}>
+                          {pnlPercent >= 0 ? '+' : ''}
+                          {formatPercent(pnlPercent)}
+                        </strong>
+                      </div>
+                    </div>
+                  </MagicBentoCard>
+                );
+              })
+            )}
+          </MagicBentoGrid>
+        </>
       )}
 
       {tab === 'transactions' && (
-        <div className="glass-card" style={{ overflow: 'auto' }}>
-          {transactions.length === 0 ? (
-            <p style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>No transactions yet.</p>
+        <MagicBentoGrid className="portfolio-transaction-grid" pattern="uniform">
+            <MagicBentoCard className="portfolio-card portfolio-card--overview portfolio-card--lead portfolio-card--full">
+            <div className="portfolio-card__header">
+              <span className="portfolio-card__eyebrow">Activity log</span>
+              <span className="portfolio-card__badge">Latest first</span>
+            </div>
+            <div className="portfolio-card__body">
+              <h2>Review how money moved through your account.</h2>
+              <p>
+                Every buy and sell stays visible with status, date, amount, and notes so you can
+                audit your investing decisions quickly.
+              </p>
+            </div>
+          </MagicBentoCard>
+
+          {recentTransactions.length === 0 ? (
+            <MagicBentoCard className="portfolio-card portfolio-card--empty portfolio-card--full">
+              <div className="portfolio-card__body">
+                <h3>No transactions yet</h3>
+                <p>Your completed buys and sells will appear here as soon as activity starts.</p>
+              </div>
+            </MagicBentoCard>
           ) : (
-            <table className="data-table">
-              <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th><th>Details</th></tr></thead>
-              <tbody>
-                {transactions.map(tx => (
-                  <tr key={tx.id}>
-                    <td>{new Date(tx.createdAt).toLocaleDateString()}</td>
-                    <td><span className={`badge badge-${tx.type === 'BUY' ? 'success' : tx.type === 'SELL' ? 'danger' : 'info'}`}>{tx.type}</span></td>
-                    <td>₹{Number(tx.amount).toFixed(2)}</td>
-                    <td><span className={`badge badge-${tx.status === 'SUCCESS' ? 'success' : 'warning'}`}>{tx.status}</span></td>
-                    <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{tx.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            recentTransactions.map((transaction) => (
+              <MagicBentoCard key={transaction.id} className="portfolio-card portfolio-card--transaction">
+                <div className="portfolio-card__header">
+                  <span className={`portfolio-status portfolio-status--${transaction.type?.toLowerCase()}`}>
+                    {transaction.type}
+                  </span>
+                  <span className={`portfolio-status portfolio-status--${transaction.status?.toLowerCase()}`}>
+                    {transaction.status}
+                  </span>
+                </div>
+
+                <div className="portfolio-card__body">
+                  <h3>{formatCurrency(transaction.amount)}</h3>
+                  <p>{transaction.description || 'Transaction details will appear here.'}</p>
+                </div>
+
+                <div className="portfolio-transaction-meta">
+                  <div>
+                    <span>
+                      <CalendarClock size={14} />
+                      Date
+                    </span>
+                    <strong>{formatTransactionDate(transaction.createdAt)}</strong>
+                  </div>
+                  <div>
+                    <span>
+                      <CreditCard size={14} />
+                      Ref
+                    </span>
+                    <strong>#{transaction.id}</strong>
+                  </div>
+                </div>
+              </MagicBentoCard>
+            ))
           )}
-        </div>
+        </MagicBentoGrid>
       )}
 
-      {/* Sell Modal */}
       {sellModal && (
-        <div className="modal-overlay" onClick={() => setSellModal(null)}>
-          <div className="glass-card modal-content" onClick={e => e.stopPropagation()}>
-            <h3 style={{ marginBottom: '1rem' }}>Sell {sellModal.fundName}</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              You own {Number(sellModal.unitsOwned).toFixed(4)} units. Current NAV: ₹{Number(sellModal.currentNav).toFixed(2)}
-            </p>
-            <div className="form-group">
-              <label>Sell Amount (₹)</label>
-              <input type="number" className="form-control" value={sellAmount} onChange={e => setSellAmount(e.target.value)} min="1" />
+        <div className="portfolio-modal-overlay" onClick={() => setSellModal(null)}>
+          <div className="portfolio-modal" onClick={(event) => event.stopPropagation()}>
+          <div className="portfolio-modal__header">
+              <div className="portfolio-modal__title-block">
+                <span className="portfolio-card__eyebrow">{sellModal.tickerSymbol}</span>
+                <h3>Sell {sellModal.fundName}</h3>
+                <p>
+                  Review your live position details and enter the rupee amount you want to liquidate.
+                </p>
+              </div>
+              <button className="portfolio-modal__close" onClick={() => setSellModal(null)}>
+                Close
+              </button>
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-danger" onClick={handleSell}>Confirm Sell</button>
-              <button className="btn btn-ghost" onClick={() => setSellModal(null)}>Cancel</button>
+
+            <div className="portfolio-modal__summary">
+              <div>
+                <span>Units owned</span>
+                <strong>{Number(sellModal.unitsOwned || 0).toFixed(4)}</strong>
+              </div>
+              <div>
+                <span>Current NAV</span>
+                <strong>{formatCurrency(sellModal.currentNav)}</strong>
+              </div>
+            </div>
+
+            <label className="portfolio-modal__field" htmlFor="sell-amount">
+              <span>Sell amount</span>
+              <input
+                id="sell-amount"
+                type="number"
+                min="1"
+                value={sellAmount}
+                onChange={(event) => setSellAmount(event.target.value)}
+                placeholder="Enter amount"
+              />
+            </label>
+
+            <div className="portfolio-modal__actions">
+              <button className="btn btn-danger" onClick={handleSell}>
+                Confirm Sell
+                <ArrowUpRight size={16} />
+              </button>
+              <button className="btn btn-ghost" onClick={() => setSellModal(null)}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>

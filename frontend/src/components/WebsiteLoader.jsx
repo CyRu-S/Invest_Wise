@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-// Finance-themed SVG icons for the scatter animation
+// Finance-themed SVG icons for the scatter → converge animation
 const icons = [
   // Bar chart
   <svg key="chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>,
@@ -28,7 +28,7 @@ const icons = [
   <svg key="star" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
 ];
 
-// Scattered positions for each icon (percentage-based)
+// Scattered positions (percentage-based, outside the circle)
 const scatterPositions = [
   { x: -35, y: -40, rotate: 45, scale: 0.9 },
   { x: 30, y: -35, rotate: -30, scale: 1.1 },
@@ -45,287 +45,460 @@ const scatterPositions = [
 ];
 
 export default function WebsiteLoader({ onFinished }) {
-  const [phase, setPhase] = useState('scatter'); // scatter → converge → logo → text → done
+  // Phases: scatter → converge → logo → brand → fadeout → done
+  const [phase, setPhase] = useState('scatter');
   const [visible, setVisible] = useState(true);
+  const [progress, setProgress] = useState(0);
+
+  // Precompute particle geometry once
+  const particles = useMemo(() => {
+    const count = 10;
+    const seed = 1337;
+    let t = seed;
+    const rand = () => {
+      t ^= t << 13;
+      t ^= t >> 17;
+      t ^= t << 5;
+      return ((t >>> 0) % 10_000) / 10_000;
+    };
+
+    return Array.from({ length: count }).map((_, i) => {
+      const angle = (i / count) * Math.PI * 2;
+      const r1 = 56 + rand() * 44;
+      const r2 = r1 + 30 + rand() * 40;
+      const size = 2 + rand() * 2.2;
+      return {
+        key: `p-${i}`,
+        start: `translate(${Math.cos(angle) * r1}px, ${Math.sin(angle) * r1}px)`,
+        end: `translate(${Math.cos(angle) * r2}px, ${Math.sin(angle) * r2}px)`,
+        delay: `${i * 0.24}s`,
+        w: `${size}px`,
+        h: `${size}px`,
+      };
+    });
+  }, []);
 
   useEffect(() => {
-    // Phase timing
     const timers = [
-      setTimeout(() => setPhase('converge'), 600),
-      setTimeout(() => setPhase('logo'), 2000),
-      setTimeout(() => setPhase('text'), 2600),
+      // Progress steps
+      setTimeout(() => setProgress(20), 200),
+      setTimeout(() => setProgress(40), 700),
+      // Icons converge into center
+      setTimeout(() => { setPhase('converge'); setProgress(55); }, 900),
+      // Favicon appears
+      setTimeout(() => { setPhase('logo'); setProgress(70); }, 2000),
+      // Brand text + loading bar
+      setTimeout(() => { setPhase('brand'); setProgress(85); }, 2600),
+      // Almost done
+      setTimeout(() => setProgress(100), 3300),
+      // Fade out
       setTimeout(() => setPhase('fadeout'), 3600),
       setTimeout(() => {
         setVisible(false);
         onFinished?.();
-      }, 4200),
+      }, 4300),
     ];
     return () => timers.forEach(clearTimeout);
   }, [onFinished]);
 
   if (!visible) return null;
 
+  const isConverging = phase === 'converge' || phase === 'logo' || phase === 'brand' || phase === 'fadeout';
+  const showLogo = phase === 'logo' || phase === 'brand' || phase === 'fadeout';
+  const showBrand = phase === 'brand' || phase === 'fadeout';
+
   return (
-    <div
-      className={`website-loader ${phase === 'fadeout' ? 'loader-fadeout' : ''}`}
-    >
+    <div className={`website-loader ${phase === 'fadeout' ? 'loader-fadeout' : ''}`}>
       <style>{`
         .website-loader {
           position: fixed;
           inset: 0;
           z-index: 9999;
-          background: #1a0a2e;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: opacity 0.6s ease-out;
+          transition: opacity 0.65s ease-out;
+          background:
+            radial-gradient(900px circle at 20% 22%, rgba(99, 102, 241, 0.16), transparent 55%),
+            radial-gradient(800px circle at 80% 66%, rgba(139, 92, 246, 0.14), transparent 56%),
+            radial-gradient(700px circle at 50% 50%, rgba(192, 132, 252, 0.08), transparent 60%),
+            #0a0e1a;
+          overflow: hidden;
+          isolation: isolate;
         }
+
+        /* Background SVG layer */
+        .loader-bg-svg {
+          position: absolute;
+          inset: 0;
+          background-image: url('/background.svg');
+          background-repeat: no-repeat;
+          background-size: cover;
+          background-position: center;
+          opacity: 0.15;
+          mix-blend-mode: screen;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .loader-bg-svg::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 50% 40%, rgba(10, 14, 26, 0.0) 0%, rgba(10, 14, 26, 0.55) 55%, rgba(10, 14, 26, 0.88) 100%);
+        }
+
+        .website-loader::before {
+          content: '';
+          position: absolute;
+          inset: -35%;
+          background:
+            conic-gradient(from 180deg at 50% 50%,
+              rgba(99, 102, 241, 0.12),
+              rgba(139, 92, 246, 0.10),
+              rgba(192, 132, 252, 0.08),
+              rgba(99, 102, 241, 0.12)
+            );
+          filter: blur(60px);
+          opacity: 0.55;
+          animation: loaderAurora 10s ease-in-out infinite alternate;
+          z-index: 0;
+        }
+
+        @keyframes loaderAurora {
+          0% { transform: translate(-4%, -6%) rotate(0deg) scale(1); }
+          100% { transform: translate(5%, 7%) rotate(26deg) scale(1.06); }
+        }
+
         .loader-fadeout {
           opacity: 0;
           pointer-events: none;
         }
 
+        /* Center stack */
+        .loader-center {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 1;
+        }
+
+        /* Glass circle stage */
         .loader-stage {
           position: relative;
-          width: 400px;
-          height: 400px;
+          width: min(320px, 78vw);
+          height: min(320px, 78vw);
           display: flex;
           align-items: center;
           justify-content: center;
+          z-index: 1;
         }
 
-        /* === Scatter Phase: Icons appear scattered === */
-        .scatter-icon {
+        .loader-plate {
           position: absolute;
-          width: 36px;
-          height: 36px;
-          color: rgba(163, 130, 255, 0.7);
-          opacity: 0;
-          animation: iconAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-          filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3));
+          inset: 0;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(14px) saturate(1.35);
+          -webkit-backdrop-filter: blur(14px) saturate(1.35);
+          box-shadow:
+            0 24px 60px rgba(3, 7, 18, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
-        @keyframes iconAppear {
-          0% {
-            opacity: 0;
-            transform: var(--scatter-transform) scale(0);
-          }
-          100% {
-            opacity: 1;
-            transform: var(--scatter-transform);
-          }
-        }
-
-        /* === Converge Phase: Icons move to center === */
-        .scatter-icon.converging {
-          animation: iconConverge 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes iconConverge {
-          0% {
-            opacity: 1;
-            transform: var(--scatter-transform);
-          }
-          70% {
-            opacity: 1;
-            transform: translate(0, 0) rotate(0deg) scale(0.5);
-          }
-          85% {
-            opacity: 1;
-            transform: translate(0, 0) rotate(0deg) scale(0.6);
-          }
-          100% {
-            opacity: 0;
-            transform: translate(0, 0) rotate(0deg) scale(0);
-          }
-        }
-
-        /* === Logo Phase === */
-        .logo-container {
+        .loader-plate::after {
+          content: '';
           position: absolute;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 16px;
-          opacity: 0;
-          transform: scale(0.5);
-        }
-
-        .logo-container.logo-visible {
-          animation: logoReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes logoReveal {
-          0% {
-            opacity: 0;
-            transform: scale(0.3);
-          }
-          60% {
-            opacity: 1;
-            transform: scale(1.08);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .logo-icon {
-          width: 56px;
-          height: 56px;
-          background: linear-gradient(135deg, #6366f1, #a78bfa, #c084fc);
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 0 30px rgba(99, 102, 241, 0.4), 0 0 60px rgba(139, 92, 246, 0.2);
-          flex-shrink: 0;
-        }
-
-        .logo-icon svg {
-          width: 32px;
-          height: 32px;
-          color: white;
-        }
-
-        /* === Text Reveal Phase === */
-        .brand-text {
-          display: flex;
-          gap: 0;
-          overflow: hidden;
-        }
-
-        .brand-letter {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          font-size: 2.8rem;
-          font-weight: 800;
-          background: linear-gradient(135deg, #c4b5fd 0%, #e9d5ff 50%, #ffffff 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          opacity: 0;
-          transform: translateY(20px);
-          letter-spacing: -0.02em;
-        }
-
-        .brand-letter.letter-visible {
-          animation: letterReveal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes letterReveal {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Subtle background glow pulse */
-        .loader-bg-glow {
-          position: absolute;
-          width: 300px;
-          height: 300px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 40%, transparent 70%);
-          animation: glowPulse 2s ease-in-out infinite;
+          inset: 0;
+          border-radius: inherit;
+          background:
+            radial-gradient(circle at 22% 26%, rgba(255, 255, 255, 0.18), transparent 36%),
+            radial-gradient(circle at 70% 62%, rgba(255, 255, 255, 0.10), transparent 44%);
+          opacity: 0.8;
           pointer-events: none;
         }
 
+        /* === Scatter Phase: Icons appear scattered outside === */
+        .scatter-icon {
+          position: absolute;
+          width: 34px;
+          height: 34px;
+          color: rgba(226, 232, 240, 0.62);
+          opacity: 0;
+          animation: iconAppear 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.18));
+        }
+
+        @keyframes iconAppear {
+          0% { opacity: 0; transform: var(--scatter-transform) scale(0); }
+          100% { opacity: 1; transform: var(--scatter-transform); }
+        }
+
+        /* === Converge Phase: Icons move into center === */
+        .scatter-icon.converging {
+          animation: iconConverge 0.95s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          filter: drop-shadow(0 0 14px rgba(139, 92, 246, 0.25));
+        }
+
+        @keyframes iconConverge {
+          0% { opacity: 1; transform: var(--scatter-transform); }
+          70% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(0.55); }
+          100% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0); }
+        }
+
+        /* === Favicon reveal after convergence === */
+        .loader-favicon-wrap {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transform: scale(0.3);
+        }
+
+        .loader-favicon-wrap.favicon-visible {
+          animation: faviconReveal 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes faviconReveal {
+          0% { opacity: 0; transform: scale(0.3); }
+          60% { opacity: 1; transform: scale(1.12); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+
+        .loader-favicon {
+          width: 72px;
+          height: 72px;
+          filter: drop-shadow(0 0 28px rgba(99, 102, 241, 0.4));
+        }
+
+        /* Glow behind favicon */
+        .loader-favicon-glow {
+          position: absolute;
+          width: 140px;
+          height: 140px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        /* Background glow pulse behind circle */
+        .loader-bg-glow {
+          position: absolute;
+          width: 320px;
+          height: 320px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, rgba(139, 92, 246, 0.08) 42%, transparent 72%);
+          animation: glowPulse 2.4s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 0;
+        }
+
         @keyframes glowPulse {
-          0%, 100% { transform: scale(1); opacity: 0.6; }
-          50% { transform: scale(1.3); opacity: 1; }
+          0%, 100% { transform: scale(1); opacity: 0.65; }
+          50% { transform: scale(1.34); opacity: 1; }
         }
 
         /* Particle sparkles */
         .loader-particle {
           position: absolute;
-          width: 3px;
-          height: 3px;
           border-radius: 50%;
-          background: rgba(163, 130, 255, 0.6);
-          animation: particleFloat 3s ease-in-out infinite;
+          background: rgba(226, 232, 240, 0.42);
+          box-shadow: 0 0 14px rgba(139, 92, 246, 0.16);
+          animation: particleFloat 3.3s ease-in-out infinite;
+          z-index: 1;
         }
 
         @keyframes particleFloat {
           0%, 100% { transform: var(--particle-start); opacity: 0; }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
+          18% { opacity: 1; }
+          82% { opacity: 1; }
           100% { transform: var(--particle-end); opacity: 0; }
         }
+
+        /* === Brand section below circle === */
+        .loader-brand-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 18px;
+          margin-top: 24px;
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        .loader-brand-section.brand-visible {
+          animation: brandSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes brandSlideUp {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .loader-brand-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .loader-brand-icon {
+          width: 34px;
+          height: 34px;
+          flex-shrink: 0;
+          filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.25));
+        }
+
+        .loader-brand-text {
+          display: flex;
+          align-items: baseline;
+          gap: 0;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-size: 1.55rem;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          color: rgba(226, 232, 240, 0.92);
+        }
+
+        .loader-brand-accent {
+          color: rgba(167, 139, 250, 0.96);
+        }
+
+        /* === Progress bar with stepped fill === */
+        .loader-progress {
+          width: min(300px, 68vw);
+          z-index: 2;
+        }
+
+        .loader-progress__track {
+          position: relative;
+          height: 8px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.10);
+          overflow: hidden;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .loader-progress__bar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          border-radius: inherit;
+          background: linear-gradient(90deg, rgba(99, 102, 241, 0.9), rgba(139, 92, 246, 0.85), rgba(192, 132, 252, 0.85));
+          box-shadow: 0 0 14px rgba(99, 102, 241, 0.3);
+          transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .loader-progress__bar::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 40px;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25));
+          border-radius: inherit;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .loader-progress__bar { transition: none; }
+          .website-loader::before,
+          .scatter-icon,
+          .scatter-icon.converging,
+          .loader-favicon-wrap.favicon-visible,
+          .loader-brand-section.brand-visible,
+          .loader-bg-glow,
+          .loader-particle {
+            animation: none !important;
+            transition: none !important;
+          }
+          .scatter-icon { opacity: 0.9; }
+          .loader-favicon-wrap { opacity: 1; transform: none; }
+          .loader-brand-section { opacity: 1; transform: none; }
+        }
       `}</style>
+
+      {/* Background SVG */}
+      <div className="loader-bg-svg" aria-hidden="true" />
 
       {/* Background glow */}
       <div className="loader-bg-glow" />
 
       {/* Floating particles */}
-      {Array.from({ length: 8 }).map((_, i) => {
-        const angle = (i / 8) * Math.PI * 2;
-        const r1 = 60 + Math.random() * 40;
-        const r2 = r1 + 30 + Math.random() * 30;
-        return (
-          <div
-            key={`p-${i}`}
-            className="loader-particle"
-            style={{
-              '--particle-start': `translate(${Math.cos(angle) * r1}px, ${Math.sin(angle) * r1}px)`,
-              '--particle-end': `translate(${Math.cos(angle) * r2}px, ${Math.sin(angle) * r2}px)`,
-              animationDelay: `${i * 0.3}s`,
-              width: `${2 + Math.random() * 2}px`,
-              height: `${2 + Math.random() * 2}px`,
-            }}
-          />
-        );
-      })}
+      {particles.map((p) => (
+        <div
+          key={p.key}
+          className="loader-particle"
+          style={{
+            '--particle-start': p.start,
+            '--particle-end': p.end,
+            animationDelay: p.delay,
+            width: p.w,
+            height: p.h,
+          }}
+        />
+      ))}
 
-      {/* Main animation stage */}
-      <div className="loader-stage">
-        {/* Scattered icons */}
-        {icons.map((icon, i) => {
-          const pos = scatterPositions[i];
-          const tx = pos.x * 4; // scale to pixels
-          const ty = pos.y * 4;
-          const scatterTransform = `translate(${tx}px, ${ty}px) rotate(${pos.rotate}deg) scale(${pos.scale})`;
-          const delay = i * 0.04;
+      <div className="loader-center">
+        {/* Glass circle with scatter → converge → favicon */}
+        <div className="loader-stage">
+          <div className="loader-plate" />
 
-          return (
-            <div
-              key={`icon-${i}`}
-              className={`scatter-icon ${phase === 'converge' || phase === 'logo' || phase === 'text' || phase === 'fadeout' ? 'converging' : ''}`}
-              style={{
-                '--scatter-transform': scatterTransform,
-                animationDelay: phase === 'scatter' ? `${delay}s` : `${delay * 0.5}s`,
-              }}
-            >
-              {icon}
-            </div>
-          );
-        })}
+          {/* Finance doodle icons: scattered outside, then converge in */}
+          {icons.map((icon, i) => {
+            const pos = scatterPositions[i];
+            const tx = pos.x * 4;
+            const ty = pos.y * 4;
+            const scatterTransform = `translate(${tx}px, ${ty}px) rotate(${pos.rotate}deg) scale(${pos.scale})`;
+            const delay = i * 0.04;
 
-        {/* Logo + Text (shown in logo/text phase) */}
-        <div className={`logo-container ${phase === 'logo' || phase === 'text' || phase === 'fadeout' ? 'logo-visible' : ''}`}>
-          <div className="logo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="6 3 18 3 22 9 12 22 2 9" />
-              <line x1="2" y1="9" x2="22" y2="9" />
-              <line x1="12" y1="22" x2="8" y2="9" />
-              <line x1="12" y1="22" x2="16" y2="9" />
-              <line x1="8" y1="9" x2="10" y2="3" />
-              <line x1="16" y1="9" x2="14" y2="3" />
-            </svg>
-          </div>
-          <div className="brand-text">
-            {'InvestWise'.split('').map((letter, i) => (
-              <span
-                key={`letter-${i}`}
-                className={`brand-letter ${phase === 'text' || phase === 'fadeout' ? 'letter-visible' : ''}`}
-                style={{ animationDelay: `${i * 0.05}s` }}
+            return (
+              <div
+                key={`icon-${i}`}
+                className={`scatter-icon ${isConverging ? 'converging' : ''}`}
+                style={{
+                  '--scatter-transform': scatterTransform,
+                  animationDelay: phase === 'scatter' ? `${delay}s` : `${delay * 0.5}s`,
+                }}
               >
-                {letter}
-              </span>
-            ))}
+                {icon}
+              </div>
+            );
+          })}
+
+          {/* Favicon appears after convergence */}
+          <div className={`loader-favicon-wrap ${showLogo ? 'favicon-visible' : ''}`}>
+            <div className="loader-favicon-glow" />
+            <img
+              className="loader-favicon"
+              src="/favicon.svg"
+              alt="InvestWise"
+            />
+          </div>
+        </div>
+
+        {/* Brand + Progress bar below circle */}
+        <div className={`loader-brand-section ${showBrand ? 'brand-visible' : ''}`}>
+          <div className="loader-brand-row">
+            <img className="loader-brand-icon" src="/favicon.svg" alt="" aria-hidden="true" />
+            <span className="loader-brand-text">
+              <span>Invest</span>
+              <span className="loader-brand-accent">Wise</span>
+            </span>
+          </div>
+
+          <div className="loader-progress" aria-hidden="true">
+            <div className="loader-progress__track">
+              <div
+                className="loader-progress__bar"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>

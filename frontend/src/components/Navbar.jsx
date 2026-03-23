@@ -17,8 +17,8 @@ const navItems = {
     { name: 'Mutual Funds', path: '/funds', icon: TrendingUp },
   ],
   INVESTOR: [
-    { name: 'Risk Profiler', path: '/risk-profiler', icon: ShieldCheck },
     { name: 'Portfolio', path: '/portfolio', icon: Briefcase },
+    { name: 'Risk Profiler', path: '/risk-profiler', icon: ShieldCheck },
     { name: 'Advisors', path: '/advisors', icon: Users },
   ],
   ADMIN: [
@@ -38,7 +38,6 @@ export default function Navbar() {
 
   if (!isAuthenticated) return null;
 
-  // Build nav items based on user role
   const items = [
     ...navItems.common,
     ...(hasRole('INVESTOR') ? navItems.INVESTOR : []),
@@ -49,7 +48,11 @@ export default function Navbar() {
     <nav className="navbar" id="main-navbar">
       <div className="navbar-inner">
         <Link to="/dashboard" className="navbar-brand">
-          💎 InvestWise
+          <img src="/favicon.svg" alt="InvestWise" className="navbar-brand__mark"/>
+          <span className="navbar-brand__wordmark" aria-label="InvestWise">
+            <span className="navbar-brand__word">Invest</span>
+            <span className="navbar-brand__word navbar-brand__word--accent">Wise</span>
+          </span>
         </Link>
 
         <div className="tubelight-nav">
