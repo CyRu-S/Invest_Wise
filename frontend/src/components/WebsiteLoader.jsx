@@ -356,7 +356,7 @@ export default function WebsiteLoader({ onFinished }) {
           display: flex;
           align-items: baseline;
           gap: 0;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: 'Mulish', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           font-size: 1.55rem;
           font-weight: 800;
           letter-spacing: -0.02em;

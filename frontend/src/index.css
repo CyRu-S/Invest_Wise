@@ -224,7 +224,7 @@ footer {
   --shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.15);
 
   /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family: 'Mulish', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Spacing & Sizing */
   --radius-sm: 8px;
@@ -568,7 +568,7 @@ footer {
   .navbar-brand__wordmark {
     display: inline-flex;
     align-items: baseline;
-    font-family: 'Space Grotesk', var(--font-family);
+    font-family: 'Philosopher', var(--font-family);
     font-size: 1.9rem;
     font-weight: 700;
     letter-spacing: -0.06em;
