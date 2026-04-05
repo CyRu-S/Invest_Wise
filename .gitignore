@@ -4,6 +4,7 @@ dist/
 build/
 .env
 .env.local
+client_secret*.json
 
 # Java / Maven
 target/
