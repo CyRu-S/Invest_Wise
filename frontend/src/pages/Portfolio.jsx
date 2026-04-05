@@ -43,6 +43,28 @@ function formatTransactionDate(value) {
   }).format(new Date(value));
 }
 
+function titleCase(value) {
+  return String(value || '')
+    .toLowerCase()
+    .split(/[\s_]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function normalizeTransaction(transaction) {
+  const fallbackCashflow =
+    transaction.type === 'DEPOSIT' || transaction.type === 'SELL' ? 'INCOME' : 'EXPENSE';
+
+  return {
+    ...transaction,
+    amount: Number(transaction.amount || 0),
+    cashflowType: transaction.cashflowType || fallbackCashflow,
+    category: transaction.category || 'General',
+    title: transaction.title || transaction.description || titleCase(transaction.type),
+  };
+}
+
 export default function Portfolio() {
   const [holdings, setHoldings] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -54,6 +76,10 @@ export default function Portfolio() {
   const [depositAmount, setDepositAmount] = useState('');
   const [sellAmount, setSellAmount] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [transactionQuery, setTransactionQuery] = useState('');
+  const [transactionTypeFilter, setTransactionTypeFilter] = useState('ALL');
+  const [transactionCategoryFilter, setTransactionCategoryFilter] = useState('ALL');
+  const [transactionSort, setTransactionSort] = useState('latest');
 
   const loadPortfolio = async () => {
     setLoading(true);
@@ -161,10 +187,45 @@ export default function Portfolio() {
     };
   }, [holdings]);
 
-  const recentTransactions = useMemo(
-    () => transactions.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+  const normalizedTransactions = useMemo(
+    () => transactions.map(normalizeTransaction),
     [transactions]
   );
+
+  const transactionCategories = useMemo(
+    () => Array.from(new Set(normalizedTransactions.map((transaction) => transaction.category))).sort(),
+    [normalizedTransactions]
+  );
+
+  const filteredTransactions = useMemo(() => {
+    const filtered = normalizedTransactions.filter((transaction) => {
+      const matchesQuery =
+        !transactionQuery ||
+        transaction.title?.toLowerCase().includes(transactionQuery.toLowerCase()) ||
+        transaction.description?.toLowerCase().includes(transactionQuery.toLowerCase()) ||
+        transaction.category?.toLowerCase().includes(transactionQuery.toLowerCase()) ||
+        transaction.tickerSymbol?.toLowerCase().includes(transactionQuery.toLowerCase());
+      const matchesType =
+        transactionTypeFilter === 'ALL' || transaction.cashflowType === transactionTypeFilter;
+      const matchesCategory =
+        transactionCategoryFilter === 'ALL' || transaction.category === transactionCategoryFilter;
+
+      return matchesQuery && matchesType && matchesCategory;
+    });
+
+    return filtered.sort((left, right) => {
+      if (transactionSort === 'amount-desc') return right.amount - left.amount;
+      if (transactionSort === 'amount-asc') return left.amount - right.amount;
+      if (transactionSort === 'oldest') return new Date(left.createdAt) - new Date(right.createdAt);
+      return new Date(right.createdAt) - new Date(left.createdAt);
+    });
+  }, [
+    normalizedTransactions,
+    transactionCategoryFilter,
+    transactionQuery,
+    transactionSort,
+    transactionTypeFilter,
+  ]);
 
   if (loading) {
     return (
@@ -365,7 +426,7 @@ export default function Portfolio() {
 
       {tab === 'transactions' && (
         <MagicBentoGrid className="portfolio-transaction-grid" pattern="uniform">
-            <MagicBentoCard className="portfolio-card portfolio-card--overview portfolio-card--lead portfolio-card--full">
+          <MagicBentoCard className="portfolio-card portfolio-card--overview portfolio-card--lead portfolio-card--full">
             <div className="portfolio-card__header">
               <span className="portfolio-card__eyebrow">Activity log</span>
               <span className="portfolio-card__badge">Latest first</span>
@@ -373,55 +434,113 @@ export default function Portfolio() {
             <div className="portfolio-card__body">
               <h2>Review how money moved through your account.</h2>
               <p>
-                Every buy and sell stays visible with status, date, amount, and notes so you can
-                audit your investing decisions quickly.
+                Explore transactions by date, amount, category, and income or expense type. Search,
+                filter, and sort the list to quickly understand your financial activity.
               </p>
             </div>
           </MagicBentoCard>
 
-          {recentTransactions.length === 0 ? (
-            <MagicBentoCard className="portfolio-card portfolio-card--empty portfolio-card--full">
-              <div className="portfolio-card__body">
+          <MagicBentoCard className="portfolio-card portfolio-card--full portfolio-card--transactions-panel">
+            <div className="portfolio-transactions-toolbar">
+              <label className="portfolio-toolbar-field portfolio-toolbar-field--search">
+                <input
+                  type="text"
+                  value={transactionQuery}
+                  onChange={(event) => setTransactionQuery(event.target.value)}
+                  placeholder="Search by title, description, ticker, or category"
+                />
+              </label>
+
+              <label className="portfolio-toolbar-field portfolio-toolbar-field--select">
+                <span>Type</span>
+                <select value={transactionTypeFilter} onChange={(event) => setTransactionTypeFilter(event.target.value)}>
+                  <option value="ALL">All types</option>
+                  <option value="INCOME">Income</option>
+                  <option value="EXPENSE">Expense</option>
+                </select>
+              </label>
+
+              <label className="portfolio-toolbar-field portfolio-toolbar-field--select">
+                <span>Category</span>
+                <select
+                  value={transactionCategoryFilter}
+                  onChange={(event) => setTransactionCategoryFilter(event.target.value)}
+                >
+                  <option value="ALL">All categories</option>
+                  {transactionCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {titleCase(category)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="portfolio-toolbar-field portfolio-toolbar-field--select">
+                <span>Sort</span>
+                <select value={transactionSort} onChange={(event) => setTransactionSort(event.target.value)}>
+                  <option value="latest">Latest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="amount-desc">Amount high to low</option>
+                  <option value="amount-asc">Amount low to high</option>
+                </select>
+              </label>
+            </div>
+
+            {normalizedTransactions.length === 0 ? (
+              <div className="portfolio-empty-state">
                 <h3>No transactions yet</h3>
-                <p>Your completed buys and sells will appear here as soon as activity starts.</p>
+                <p>Your completed buys, sells, deposits, and fee payments will appear here as activity starts.</p>
               </div>
-            </MagicBentoCard>
-          ) : (
-            recentTransactions.map((transaction) => (
-              <MagicBentoCard key={transaction.id} className="portfolio-card portfolio-card--transaction">
-                <div className="portfolio-card__header">
-                  <span className={`portfolio-status portfolio-status--${transaction.type?.toLowerCase()}`}>
-                    {transaction.type}
-                  </span>
-                  <span className={`portfolio-status portfolio-status--${transaction.status?.toLowerCase()}`}>
-                    {transaction.status}
-                  </span>
-                </div>
-
-                <div className="portfolio-card__body">
-                  <h3>{formatCurrency(transaction.amount)}</h3>
-                  <p>{transaction.description || 'Transaction details will appear here.'}</p>
-                </div>
-
-                <div className="portfolio-transaction-meta">
-                  <div>
-                    <span>
-                      <CalendarClock size={14} />
-                      Date
-                    </span>
-                    <strong>{formatTransactionDate(transaction.createdAt)}</strong>
-                  </div>
-                  <div>
-                    <span>
-                      <CreditCard size={14} />
-                      Ref
-                    </span>
-                    <strong>#{transaction.id}</strong>
-                  </div>
-                </div>
-              </MagicBentoCard>
-            ))
-          )}
+            ) : filteredTransactions.length ? (
+              <div className="portfolio-transaction-table-shell">
+                <table className="portfolio-transaction-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Transaction</th>
+                      <th>Category</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTransactions.map((transaction) => (
+                      <tr key={transaction.id}>
+                        <td>{formatTransactionDate(transaction.createdAt)}</td>
+                        <td>
+                          <div className="portfolio-transaction-table__title">
+                            <strong>{transaction.title}</strong>
+                            <span>{transaction.description || `Ref #${transaction.id}`}</span>
+                          </div>
+                        </td>
+                        <td>{titleCase(transaction.category)}</td>
+                        <td>
+                          <span className={`portfolio-status portfolio-status--${transaction.cashflowType.toLowerCase()}`}>
+                            {titleCase(transaction.cashflowType)}
+                          </span>
+                        </td>
+                        <td className={transaction.cashflowType === 'INCOME' ? 'is-positive' : 'is-negative'}>
+                          {transaction.cashflowType === 'INCOME' ? '+' : '-'}
+                          {formatCurrency(transaction.amount)}
+                        </td>
+                        <td>
+                          <span className={`portfolio-status portfolio-status--${transaction.status?.toLowerCase()}`}>
+                            {titleCase(transaction.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="portfolio-empty-state">
+                <h3>No transactions match the current filters.</h3>
+                <p>Try clearing the search or broadening the selected transaction filters.</p>
+              </div>
+            )}
+          </MagicBentoCard>
         </MagicBentoGrid>
       )}
 

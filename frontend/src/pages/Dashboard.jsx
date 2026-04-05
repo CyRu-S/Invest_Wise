@@ -13,6 +13,17 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import './DashboardPage.css';
@@ -26,6 +37,86 @@ function formatCurrency(value) {
 function formatPercent(value) {
   if (value === null || value === undefined || value === '') return 'N/A';
   return `${(Number(value) * 100).toFixed(2)}%`;
+}
+
+function formatCompactCurrency(value) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(Number(value || 0));
+}
+
+function formatChartCurrency(value) {
+  return `₹${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+}
+
+function formatMonthKey(value) {
+  return new Intl.DateTimeFormat('en-IN', { month: 'short' }).format(value);
+}
+
+function normalizeTransaction(transaction) {
+  const fallbackDirection =
+    transaction.type === 'DEPOSIT' || transaction.type === 'SELL' ? 'INCOME' : 'EXPENSE';
+  const cashflowType = transaction.cashflowType || fallbackDirection;
+  const amount = Number(transaction.amount || 0);
+
+  return {
+    ...transaction,
+    amount,
+    cashflowType,
+    category: transaction.category || 'General',
+    signedAmount: cashflowType === 'INCOME' ? amount : -amount,
+    title: transaction.title || transaction.description || transaction.type,
+  };
+}
+
+function buildBalanceTrend(transactions, walletBalance) {
+  const currentWallet = Number(walletBalance || 0);
+  const signedTotal = transactions.reduce((sum, tx) => sum + tx.signedAmount, 0);
+  const startingWallet = Math.max(currentWallet - signedTotal, 0);
+  const monthKeys = [];
+  const now = new Date();
+
+  for (let offset = 5; offset >= 0; offset -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+    monthKeys.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+  }
+
+  const monthlyBuckets = monthKeys.reduce((accumulator, key) => {
+    accumulator[key] = { income: 0, expense: 0 };
+    return accumulator;
+  }, {});
+
+  transactions.forEach((tx) => {
+    const date = new Date(tx.createdAt);
+    if (Number.isNaN(date.getTime())) return;
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (!monthlyBuckets[key]) return;
+
+    if (tx.cashflowType === 'INCOME') {
+      monthlyBuckets[key].income += tx.amount;
+    } else {
+      monthlyBuckets[key].expense += tx.amount;
+    }
+  });
+
+  let runningBalance = startingWallet;
+  return monthKeys.map((key) => {
+    const [year, month] = key.split('-').map(Number);
+    const snapshotDate = new Date(year, month - 1, 1);
+    const income = monthlyBuckets[key].income;
+    const expense = monthlyBuckets[key].expense;
+    runningBalance += income - expense;
+
+    return {
+      month: formatMonthKey(snapshotDate),
+      balance: Number(runningBalance.toFixed(2)),
+      income,
+      expense,
+    };
+  });
 }
 
 function RiskRing({ score, size = 70, strokeWidth = 5 }) {
@@ -150,11 +241,48 @@ function DashboardHeader({ user, roleLabel, subtitle, summaryItems }) {
   );
 }
 
-function InvestorDashboard({ user, profile, funds, topPerformer, categoryCount }) {
-  const walletBalance = formatCurrency(profile?.walletBalance);
+function InvestorDashboard({ user, profile, funds, holdings, transactions, topPerformer, categoryCount }) {
+  const walletBalanceNumber = Number(profile?.walletBalance || 0);
+  const walletBalance = formatCurrency(walletBalanceNumber);
   const riskScore = Number(profile?.riskToleranceScore || 0);
   const riskCategory = profile?.riskCategory || 'Not set';
-  const topReturn = topPerformer ? formatPercent(topPerformer.oneYearReturn) : 'N/A';
+  const normalizedTransactions = transactions.map(normalizeTransaction);
+  const totalPortfolioValue = holdings.reduce((sum, holding) => sum + Number(holding.currentValue || 0), 0);
+  const totalIncome = normalizedTransactions
+    .filter((transaction) => transaction.cashflowType === 'INCOME')
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+  const totalExpenses = normalizedTransactions
+    .filter((transaction) => transaction.cashflowType === 'EXPENSE')
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+  const balanceTrend = buildBalanceTrend(normalizedTransactions, walletBalanceNumber);
+  const spendingBreakdown = Object.entries(
+    normalizedTransactions
+      .filter((transaction) => transaction.cashflowType === 'EXPENSE')
+      .reduce((accumulator, transaction) => {
+        accumulator[transaction.category] = (accumulator[transaction.category] || 0) + transaction.amount;
+        return accumulator;
+      }, {})
+  )
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((left, right) => right.amount - left.amount)
+    .slice(0, 5);
+
+  const highestSpending = spendingBreakdown[0];
+  const latestMonth = balanceTrend[balanceTrend.length - 1];
+  const previousMonth = balanceTrend[balanceTrend.length - 2];
+  const monthDelta = latestMonth && previousMonth ? latestMonth.expense - previousMonth.expense : 0;
+  const incomeCount = normalizedTransactions.filter((transaction) => transaction.cashflowType === 'INCOME').length;
+  const expenseCount = normalizedTransactions.filter((transaction) => transaction.cashflowType === 'EXPENSE').length;
+  const latestNet = latestMonth ? latestMonth.income - latestMonth.expense : 0;
+  const insightItems = [
+    highestSpending
+      ? `Highest spending category: ${highestSpending.category} at ${formatCurrency(highestSpending.amount)}.`
+      : 'No expense category has been logged yet.',
+    latestMonth && previousMonth
+      ? `Monthly comparison: expenses are ${monthDelta >= 0 ? 'up' : 'down'} ${formatCurrency(Math.abs(monthDelta))} versus ${previousMonth.month}.`
+      : 'Monthly comparison will appear once at least two months of activity are available.',
+    `Useful observation: ${latestNet >= 0 ? 'cash flow stayed positive' : 'spend exceeded inflow'} in ${latestMonth?.month || 'the current period'}, with ${incomeCount} income entries and ${expenseCount} expense entries logged.`,
+  ];
 
   return (
     <>
@@ -165,10 +293,115 @@ function InvestorDashboard({ user, profile, funds, topPerformer, categoryCount }
         summaryItems={[
           { label: 'Wallet balance', value: walletBalance },
           { label: 'Risk score', value: `${riskScore}/100`, note: riskCategory },
-          { label: 'Funds available', value: funds.length, note: `${categoryCount} categories` },
-          { label: 'Top 1Y performer', value: topPerformer?.tickerSymbol || 'Waiting', note: topReturn },
+          { label: 'Income', value: formatCurrency(totalIncome), note: 'Deposits and redemptions' },
+          { label: 'Expenses', value: formatCurrency(totalExpenses), note: 'Investments and advisor fees' },
         ]}
       />
+
+      <MagicBentoGrid className="dashboard-finance-grid" pattern="uniform">
+        <MagicBentoCard className="dashboard-bento dashboard-finance-card dashboard-finance-card--chart dashboard-finance-card--trend">
+          <div className="dashboard-bento__header">
+            <span className="dashboard-bento__eyebrow">Balance trend</span>
+            <span className="dashboard-bento__badge">Last 6 months</span>
+          </div>
+          <div className="dashboard-bento__body">
+            <h3>See how wallet activity evolved over time.</h3>
+            <p>Track the running balance created by your recent deposits, buys, and redemptions.</p>
+          </div>
+          <div className="dashboard-chart-shell">
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={balanceTrend}>
+                <defs>
+                  <linearGradient id="balanceTrendFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="rgba(148,163,184,0.08)" vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={formatCompactCurrency} tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
+                <Tooltip
+                  formatter={(value) => formatChartCurrency(value)}
+                  contentStyle={{
+                    background: 'rgba(15, 23, 42, 0.94)',
+                    border: '1px solid rgba(148,163,184,0.16)',
+                    borderRadius: 16,
+                    color: '#f8fafc',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="balance"
+                  stroke="#818cf8"
+                  strokeWidth={3}
+                  fill="url(#balanceTrendFill)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </MagicBentoCard>
+
+        <MagicBentoCard className="dashboard-bento dashboard-finance-card dashboard-finance-card--chart">
+          <div className="dashboard-bento__header">
+            <span className="dashboard-bento__eyebrow">Spending breakdown</span>
+            <span className="dashboard-bento__badge">By category</span>
+          </div>
+          <div className="dashboard-bento__body">
+            <h3>Understand where your money is going.</h3>
+            <p>Expenses are grouped into the main categories visible in your financial activity stream.</p>
+          </div>
+          {spendingBreakdown.length ? (
+            <div className="dashboard-chart-shell">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={spendingBreakdown} layout="vertical" margin={{ left: 10, right: 20 }}>
+                  <CartesianGrid stroke="rgba(148,163,184,0.08)" horizontal={false} />
+                  <XAxis type="number" hide />
+                  <YAxis
+                    type="category"
+                    dataKey="category"
+                    width={120}
+                    tick={{ fill: '#cbd5e1', fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    formatter={(value) => formatChartCurrency(value)}
+                    contentStyle={{
+                      background: 'rgba(15, 23, 42, 0.94)',
+                      border: '1px solid rgba(148,163,184,0.16)',
+                      borderRadius: 16,
+                      color: '#f8fafc',
+                    }}
+                  />
+                  <Bar dataKey="amount" radius={[0, 12, 12, 0]} fill="#34d399" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="dashboard-empty-state">
+              <p>No spending data yet. Make an investment or pay a fee to see the category mix.</p>
+            </div>
+          )}
+        </MagicBentoCard>
+
+        <MagicBentoCard className="dashboard-bento dashboard-finance-card dashboard-finance-card--insights dashboard-finance-card--full">
+          <div className="dashboard-bento__header">
+            <span className="dashboard-bento__eyebrow">Insights</span>
+            <span className="dashboard-bento__badge">Quick summary</span>
+          </div>
+          <div className="dashboard-bento__body">
+            <h3>Turn raw activity into a few useful observations.</h3>
+            <div className="dashboard-insight-list">
+              {insightItems.map((item) => (
+                <div key={item} className="dashboard-insight-item">
+                  <ShieldCheck size={16} />
+                  <p>{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </MagicBentoCard>
+      </MagicBentoGrid>
 
       <MagicBentoGrid className="dashboard-bento-grid dashboard-bento-grid--investor" pattern="uniform">
         <DashboardActionCard
@@ -412,12 +645,24 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [funds, setFunds] = useState([]);
   const [stats, setStats] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [holdings, setHoldings] = useState([]);
 
   useEffect(() => {
     api.get('/funds/public').then((response) => setFunds(response.data)).catch(() => {});
 
     if (hasRole('INVESTOR')) {
-      api.get('/investor/profile').then((response) => setProfile(response.data)).catch(() => {});
+      Promise.all([
+        api.get('/investor/profile'),
+        api.get('/transactions/history'),
+        api.get('/transactions/portfolio'),
+      ])
+        .then(([profileResponse, historyResponse, portfolioResponse]) => {
+          setProfile(profileResponse.data);
+          setTransactions(historyResponse.data);
+          setHoldings(portfolioResponse.data);
+        })
+        .catch(() => {});
     }
 
     if (hasRole('ADMIN')) {
@@ -447,6 +692,8 @@ export default function Dashboard() {
           user={user}
           profile={profile}
           funds={funds}
+          holdings={holdings}
+          transactions={transactions}
           topPerformer={topPerformer}
           categoryCount={categoryCount}
         />
