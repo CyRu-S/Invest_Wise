@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
@@ -6,10 +6,24 @@ import api from '../services/api';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
 function GoogleSignInButton({ onSuccess, onError, loading }) {
+  const googleButtonRef = useRef(null);
+
+  const handleClick = () => {
+    if (loading) return;
+
+    const clickableElement =
+      googleButtonRef.current?.querySelector('[role="button"]') ||
+      googleButtonRef.current?.querySelector('iframe') ||
+      googleButtonRef.current?.firstElementChild;
+
+    clickableElement?.click?.();
+  };
+
   return (
     <div className="relative">
       <button
         type="button"
+        onClick={handleClick}
         disabled={loading}
         className="backdrop-blur-[2px] w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
       >
@@ -22,7 +36,11 @@ function GoogleSignInButton({ onSuccess, onError, loading }) {
         <span>{loading ? 'Connecting to Google...' : 'Continue with Google'}</span>
       </button>
 
-      <div className="absolute inset-0 overflow-hidden rounded-full opacity-0">
+      <div
+        ref={googleButtonRef}
+        className="absolute inset-0 overflow-hidden rounded-full opacity-0 pointer-events-none"
+        aria-hidden="true"
+      >
         <GoogleLogin
           onSuccess={onSuccess}
           onError={onError}
