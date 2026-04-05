@@ -1,42 +1,36 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
 function GoogleSignInButton({ onSuccess, onError, loading }) {
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        disabled={loading}
-        className="pointer-events-none backdrop-blur-[2px] w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-      >
-        <svg width="22" height="22" viewBox="0 0 48 48" aria-hidden="true">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        </svg>
-        <span>{loading ? 'Connecting to Google...' : 'Continue with Google'}</span>
-      </button>
+  const triggerGoogleLogin = useGoogleLogin({
+    flow: 'implicit',
+    onSuccess,
+    onError,
+  });
 
-      <div
-        className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-full opacity-0"
-      >
-        <GoogleLogin
-          onSuccess={onSuccess}
-          onError={onError}
-          useOneTap={false}
-          theme="outline"
-          shape="pill"
-          size="large"
-          width="384"
-          text="continue_with"
-        />
-      </div>
-    </div>
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (!loading) {
+          triggerGoogleLogin();
+        }
+      }}
+      disabled={loading}
+      className="backdrop-blur-[2px] w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+    >
+      <svg width="22" height="22" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      <span>{loading ? 'Connecting to Google...' : 'Continue with Google'}</span>
+    </button>
   );
 }
 
@@ -52,9 +46,11 @@ export default function LoginPage() {
     import.meta.env.VITE_GOOGLE_CLIENT_ID ||
     '75114719261-n2f50sgmafqju6739nuo0lggpne51b5a.apps.googleusercontent.com';
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    if (!credentialResponse?.credential) {
-      setError('Google sign-in did not return a credential.');
+  const handleGoogleSuccess = async (tokenResponse) => {
+    const googleToken = tokenResponse?.access_token || tokenResponse?.credential;
+
+    if (!googleToken) {
+      setError('Google sign-in did not return a usable credential.');
       return;
     }
 
@@ -62,7 +58,7 @@ export default function LoginPage() {
     setGoogleLoading(true);
 
     try {
-      const res = await api.post('/auth/google', { idToken: credentialResponse.credential });
+      const res = await api.post('/auth/google', { idToken: googleToken });
       login(res.data);
       navigate('/dashboard');
     } catch (err) {
