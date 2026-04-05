@@ -57,7 +57,11 @@ export default function LoginPage() {
       login(res.data);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Google sign-in failed');
+      if (!err.response) {
+        setError('Could not reach the server. Check the Render CORS origin and Google env setup.');
+      } else {
+        setError(err.response?.data?.message || 'Google sign-in failed');
+      }
     } finally {
       setGoogleLoading(false);
     }
@@ -128,7 +132,13 @@ export default function LoginPage() {
               <GoogleSignInButton
                 clientId={googleClientId}
                 onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google sign-in failed')}
+                onError={(googleError) =>
+                  setError(
+                    googleError?.error_description ||
+                      googleError?.error ||
+                      'Google sign-in failed'
+                  )
+                }
                 loading={googleLoading}
               />
             </GoogleOAuthProvider>
