@@ -13,8 +13,10 @@ import FundDetail from './pages/FundDetail';
 import RiskProfiler from './pages/RiskProfiler';
 import Portfolio from './pages/Portfolio';
 import AdvisorHub from './pages/AdvisorHub';
+import AdvisorAppointments from './pages/AdvisorAppointments';
 import AdvisorProfileDetail from './pages/AdvisorProfileDetail';
 import AdminPanel from './pages/AdminPanel';
+import AnalystDataManagement from './pages/AnalystDataManagement';
 import ClickSpark from './components/ClickSpark';
 
 function ProtectedRoute({ children, roles }) {
@@ -58,6 +60,8 @@ function AppRoutes() {
         <Route path="/portfolio" element={<ProtectedRoute roles={['INVESTOR']}><Portfolio /></ProtectedRoute>} />
         <Route path="/advisors" element={<ProtectedRoute roles={['INVESTOR']}><AdvisorHub /></ProtectedRoute>} />
         <Route path="/advisors/:id" element={<ProtectedRoute roles={['INVESTOR']}><AdvisorProfileDetail /></ProtectedRoute>} />
+        <Route path="/appointments" element={<ProtectedRoute roles={['ADVISOR']}><AdvisorAppointments /></ProtectedRoute>} />
+        <Route path="/data-management" element={<ProtectedRoute roles={['ANALYST', 'ADMIN']}><AnalystDataManagement /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminPanel /></ProtectedRoute>} />
 
         {/* Default */}

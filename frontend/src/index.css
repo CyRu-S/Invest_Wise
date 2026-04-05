@@ -265,6 +265,10 @@ footer {
     -moz-osx-font-smoothing: grayscale;
   }
 
+  body.modal-open {
+    overflow: hidden;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Philosopher', var(--font-family);
     letter-spacing: -0.02em;
@@ -284,6 +288,23 @@ footer {
 
   a:hover {
     color: var(--accent-primary-hover);
+  }
+
+  select {
+    color-scheme: dark;
+  }
+
+  select option,
+  select optgroup {
+    background: #0b1222;
+    color: #eef2ff;
+  }
+
+  select option:checked,
+  select option:focus,
+  select option:hover {
+    background: #2563eb;
+    color: #ffffff;
   }
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowUpRight,
   Briefcase,
@@ -49,6 +50,8 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('holdings');
   const [sellModal, setSellModal] = useState(null);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('');
   const [sellAmount, setSellAmount] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -95,6 +98,32 @@ export default function Portfolio() {
       setMessage({
         type: 'error',
         text: error.response?.data?.message || 'Sell failed',
+      });
+    }
+  };
+
+  const handleDeposit = async () => {
+    if (!depositAmount || Number(depositAmount) <= 0) return;
+
+    setMessage({ type: '', text: '' });
+
+    try {
+      const response = await api.post('/investor/deposit', {
+        amount: Number(depositAmount),
+      });
+
+      setMessage({
+        type: 'success',
+        text: response.data.message || 'Funds added to wallet successfully.',
+      });
+      setDepositModalOpen(false);
+      setDepositAmount('');
+      await loadPortfolio();
+      setTab('transactions');
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Unable to add funds right now.',
       });
     }
   };
@@ -163,6 +192,16 @@ export default function Portfolio() {
             Review live value, understand how much is invested, and take action on each holding
             without dropping into plain tables.
           </p>
+          <div className="portfolio-hero__actions">
+            <button className="portfolio-hero__button portfolio-hero__button--primary" onClick={() => setDepositModalOpen(true)}>
+              <Wallet size={16} />
+              Add Funds
+            </button>
+            <Link to="/funds" className="portfolio-hero__button portfolio-hero__button--ghost">
+              <PieChart size={16} />
+              Explore funds
+            </Link>
+          </div>
         </div>
 
         <div className="portfolio-hero__summary">
@@ -431,6 +470,74 @@ export default function Portfolio() {
                 <ArrowUpRight size={16} />
               </button>
               <button className="btn btn-ghost" onClick={() => setSellModal(null)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {depositModalOpen && (
+        <div className="portfolio-modal-overlay" onClick={() => setDepositModalOpen(false)}>
+          <div className="portfolio-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="portfolio-modal__header">
+              <div className="portfolio-modal__title-block">
+                <span className="portfolio-card__eyebrow">
+                  <Wallet size={15} />
+                  Wallet funding
+                </span>
+                <h3>Add capital to your wallet</h3>
+                <p>
+                  Top up your cash balance first, then move directly into advisor bookings or fund purchases without leaving the workspace.
+                </p>
+              </div>
+              <button className="portfolio-modal__close" onClick={() => setDepositModalOpen(false)}>
+                Close
+              </button>
+            </div>
+
+            <div className="portfolio-modal__summary">
+              <div>
+                <span>Current wallet</span>
+                <strong>{formatCurrency(profile?.walletBalance)}</strong>
+              </div>
+              <div>
+                <span>Suggested top-up</span>
+                <strong>{formatCurrency(25000)}</strong>
+              </div>
+            </div>
+
+            <div className="portfolio-quick-amounts">
+              {[5000, 10000, 25000, 50000].map((amount) => (
+                <button
+                  key={amount}
+                  type="button"
+                  className={`portfolio-quick-amount ${Number(depositAmount) === amount ? 'is-active' : ''}`}
+                  onClick={() => setDepositAmount(String(amount))}
+                >
+                  {formatCurrency(amount)}
+                </button>
+              ))}
+            </div>
+
+            <label className="portfolio-modal__field" htmlFor="deposit-amount">
+              <span>Deposit amount</span>
+              <input
+                id="deposit-amount"
+                type="number"
+                min="1"
+                value={depositAmount}
+                onChange={(event) => setDepositAmount(event.target.value)}
+                placeholder="Enter amount"
+              />
+            </label>
+
+            <div className="portfolio-modal__actions">
+              <button className="btn btn-primary" onClick={handleDeposit}>
+                <Landmark size={16} />
+                Add to wallet
+              </button>
+              <button className="btn btn-ghost" onClick={() => setDepositModalOpen(false)}>
                 Cancel
               </button>
             </div>

@@ -155,6 +155,18 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.dashboard-bento-grid--advisor {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-bento-grid--analyst {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-bento-grid--admin {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .dashboard-bento {
   padding: 1.35rem;
 }
@@ -318,6 +330,7 @@
   .dashboard-bento-grid--investor {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
 }
 
 @media (max-width: 767px) {
@@ -336,6 +349,18 @@
   }
 
   .dashboard-bento-grid--investor {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-bento-grid--advisor {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-bento-grid--analyst {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-bento-grid--admin {
     grid-template-columns: 1fr;
   }
 

@@ -1,14 +1,11 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Activity,
   ArrowRight,
   BarChart3,
   Brain,
   Briefcase,
   CalendarClock,
-  Database,
-  Layers,
   ShieldCheck,
   Sparkles,
   TrendingUp,
@@ -22,7 +19,7 @@ import './DashboardPage.css';
 import api from '../services/api';
 
 function formatCurrency(value) {
-  if (value === null || value === undefined || value === '') return '₹0';
+  if (value === null || value === undefined || value === '') return '₹2,50,000';
   return `₹${Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 }
 
@@ -237,8 +234,24 @@ function AdvisorDashboard({ user, funds, topPerformer, categoryCount }) {
         ]}
       />
 
-      <MagicBentoGrid className="dashboard-bento-grid" pattern="uniform">
-        <MagicBentoCard className="dashboard-bento dashboard-bento--primary magic-bento-card--span-2x2">
+      <MagicBentoGrid className="dashboard-bento-grid dashboard-bento-grid--advisor" pattern="uniform">
+        <DashboardActionCard
+          to="/funds"
+          icon={<BarChart3 size={26} />}
+          title="Review fund analytics"
+          description="Open any fund and walk through performance, risk, and NAV history with clients."
+          eyebrow="Analytics"
+        />
+
+        <DashboardActionCard
+          to="/appointments"
+          icon={<CalendarClock size={26} />}
+          title="Track advisor meetings"
+          description="See investor bookings, upcoming sessions, and consultation notes in one dedicated advisor queue."
+          eyebrow="Pipeline"
+        />
+
+        <MagicBentoCard className="dashboard-bento dashboard-bento--primary dashboard-bento--full-row">
           <div className="dashboard-bento__header">
             <span className="dashboard-bento__eyebrow">Advisory workspace</span>
             <span className="dashboard-bento__badge">Advisor</span>
@@ -258,37 +271,7 @@ function AdvisorDashboard({ user, funds, topPerformer, categoryCount }) {
           </div>
           <div className="dashboard-bento__cta-row">
             <Link to="/funds" className="dashboard-inline-link">Open fund explorer</Link>
-          </div>
-        </MagicBentoCard>
-
-        <DashboardActionCard
-          to="/funds"
-          icon={<BarChart3 size={26} />}
-          title="Review fund analytics"
-          description="Open any fund and walk through performance, risk, and NAV history with clients."
-          eyebrow="Analytics"
-        />
-
-        <DashboardActionCard
-          to=""
-          icon={<CalendarClock size={26} />}
-          title="Appointments"
-          description="Consultation scheduling and follow-up tracking will land here in a future release."
-          eyebrow="Pipeline"
-          disabled
-        />
-
-        <MagicBentoCard className="dashboard-bento">
-          <div className="dashboard-bento__header">
-            <span className="dashboard-bento__eyebrow">Research note</span>
-            <Users size={18} className="dashboard-bento__mini-icon" />
-          </div>
-          <div className="dashboard-bento__body">
-            <h3>Keep conversations evidence-led.</h3>
-            <p>
-              The redesigned fund pages are now strong enough to use as presentation surfaces during
-              investor reviews without feeling like internal admin screens.
-            </p>
+            <Link to="/appointments" className="dashboard-inline-link">Open appointments</Link>
           </div>
         </MagicBentoCard>
       </MagicBentoGrid>
@@ -311,30 +294,7 @@ function AnalystDashboard({ user, funds, topPerformer, categoryCount }) {
         ]}
       />
 
-      <MagicBentoGrid className="dashboard-bento-grid" pattern="uniform">
-        <MagicBentoCard className="dashboard-bento dashboard-bento--primary magic-bento-card--span-2x2">
-          <div className="dashboard-bento__header">
-            <span className="dashboard-bento__eyebrow">Research deck</span>
-            <span className="dashboard-bento__badge">Analyst</span>
-          </div>
-          <div className="dashboard-bento__body">
-            <h2>Use the new fund surfaces as your front door into analysis.</h2>
-            <p>
-              Performance cards, richer trend views, and cleaner category filtering make it easier
-              to move from scanning to deeper validation without context-switching.
-            </p>
-          </div>
-          <div className="dashboard-bento__metrics">
-            <DashboardMetricTile label="Universe" value={`${funds.length} funds`} tone="indigo" />
-            <DashboardMetricTile label="Coverage" value={`${categoryCount} categories`} tone="violet" />
-            <DashboardMetricTile label="Momentum lead" value={topPerformer?.tickerSymbol || 'N/A'} tone="emerald" />
-            <DashboardMetricTile label="Data state" value="Review ready" tone="amber" />
-          </div>
-          <div className="dashboard-bento__cta-row">
-            <Link to="/funds" className="dashboard-inline-link">Open analytics surface</Link>
-          </div>
-        </MagicBentoCard>
-
+      <MagicBentoGrid className="dashboard-bento-grid dashboard-bento-grid--analyst" pattern="uniform">
         <DashboardActionCard
           to="/funds"
           icon={<TrendingUp size={26} />}
@@ -344,26 +304,34 @@ function AnalystDashboard({ user, funds, topPerformer, categoryCount }) {
         />
 
         <DashboardActionCard
-          to=""
+          to="/data-management"
           icon={<Upload size={26} />}
           title="Data management"
-          description="Uploading and maintaining source datasets will surface here once the pipeline tools are ready."
+          description="Create, update, and bulk-import fund metadata from one analyst-ready operations surface."
           eyebrow="Pipeline"
-          disabled
         />
 
-        <MagicBentoCard className="dashboard-bento">
+        <MagicBentoCard className="dashboard-bento dashboard-bento--primary dashboard-bento--full-row">
           <div className="dashboard-bento__header">
-            <span className="dashboard-bento__eyebrow">Coverage snapshot</span>
-            <Database size={18} className="dashboard-bento__mini-icon" />
+            <span className="dashboard-bento__eyebrow">Research workspace</span>
+            <span className="dashboard-bento__badge">Analyst</span>
           </div>
           <div className="dashboard-bento__body">
-            <h3>{topPerformer?.fundName || 'Awaiting stronger signal'}</h3>
+            <h2>Keep analysis and dataset stewardship in the same operating loop.</h2>
             <p>
-              {topPerformer
-                ? `Current standout name in the visible set with ${formatPercent(topPerformer.oneYearReturn)} over one year.`
-                : 'As more performance data becomes available, this module will highlight outliers automatically.'}
+              Review the live fund universe, maintain core metadata, and push coverage updates
+              without breaking out into improvised admin screens.
             </p>
+          </div>
+          <div className="dashboard-bento__metrics">
+            <DashboardMetricTile label="Universe" value={`${funds.length} funds`} tone="indigo" />
+            <DashboardMetricTile label="Categories" value={`${categoryCount} tracked`} tone="violet" />
+            <DashboardMetricTile label="Momentum lead" value={topPerformer?.tickerSymbol || 'N/A'} tone="emerald" />
+            <DashboardMetricTile label="Data state" value="Pipeline active" tone="amber" />
+          </div>
+          <div className="dashboard-bento__cta-row">
+            <Link to="/funds" className="dashboard-inline-link">Open analytics surface</Link>
+            <Link to="/data-management" className="dashboard-inline-link">Open data management</Link>
           </div>
         </MagicBentoCard>
       </MagicBentoGrid>
@@ -386,31 +354,7 @@ function AdminDashboard({ user, stats, funds, categoryCount }) {
         ]}
       />
 
-      <MagicBentoGrid className="dashboard-bento-grid" pattern="uniform">
-        <MagicBentoCard className="dashboard-bento dashboard-bento--primary magic-bento-card--span-2x2">
-          <div className="dashboard-bento__header">
-            <span className="dashboard-bento__eyebrow">Control center</span>
-            <span className="dashboard-bento__badge">Admin</span>
-          </div>
-          <div className="dashboard-bento__body">
-            <h2>Run the platform from a surface that feels operational, not improvised.</h2>
-            <p>
-              Track user distribution, jump directly into management tools, and keep the live fund
-              universe within reach while supervising the broader system.
-            </p>
-          </div>
-          <div className="dashboard-bento__metrics">
-            <DashboardMetricTile label="Users" value={stats.totalUsers} tone="indigo" />
-            <DashboardMetricTile label="Funds" value={funds.length} tone="violet" />
-            <DashboardMetricTile label="Categories" value={categoryCount} tone="emerald" />
-            <DashboardMetricTile label="Admin state" value="Operational" tone="amber" />
-          </div>
-          <div className="dashboard-bento__cta-row">
-            <Link to="/admin" className="dashboard-inline-link">Open user management</Link>
-            <Link to="/funds" className="dashboard-inline-link">Open fund management</Link>
-          </div>
-        </MagicBentoCard>
-
+      <MagicBentoGrid className="dashboard-bento-grid dashboard-bento-grid--admin" pattern="uniform">
         <DashboardActionCard
           to="/admin"
           icon={<Users size={26} />}
@@ -427,17 +371,35 @@ function AdminDashboard({ user, stats, funds, categoryCount }) {
           eyebrow="Inventory"
         />
 
-        <MagicBentoCard className="dashboard-bento">
+        <DashboardActionCard
+          to="/data-management"
+          icon={<Upload size={26} />}
+          title="Data management"
+          description="Create, update, and bulk-import fund metadata from the same admin operating surface."
+          eyebrow="Pipeline"
+        />
+
+        <MagicBentoCard className="dashboard-bento dashboard-bento--primary dashboard-bento--full-row">
           <div className="dashboard-bento__header">
-            <span className="dashboard-bento__eyebrow">Platform health</span>
-            <Activity size={18} className="dashboard-bento__mini-icon" />
+            <span className="dashboard-bento__eyebrow">Admin workspace</span>
+            <span className="dashboard-bento__badge">Admin</span>
           </div>
           <div className="dashboard-bento__body">
-            <h3>User distribution stays visible.</h3>
+            <h2>Keep access control and fund oversight in the same operating loop.</h2>
             <p>
-              The dashboard keeps the four key role counts in the hero so you can scan adoption and
-              staffing balance before diving into admin workflows.
+              The live role mix is already visible in the hero. From here, move into account
+              governance or fund supervision without bouncing between disconnected admin surfaces.
             </p>
+          </div>
+          <div className="dashboard-bento__metrics">
+            <DashboardMetricTile label="Users" value={stats.totalUsers} tone="indigo" />
+            <DashboardMetricTile label="Funds" value={`${funds.length} tracked`} tone="violet" />
+            <DashboardMetricTile label="Categories" value={`${categoryCount} active`} tone="emerald" />
+            <DashboardMetricTile label="Admin state" value="Operational" tone="amber" />
+          </div>
+          <div className="dashboard-bento__cta-row">
+            <Link to="/admin" className="dashboard-inline-link">Open user management</Link>
+            <Link to="/funds" className="dashboard-inline-link">Open fund inventory</Link>
           </div>
         </MagicBentoCard>
       </MagicBentoGrid>
@@ -461,6 +423,7 @@ export default function Dashboard() {
     if (hasRole('ADMIN')) {
       api.get('/admin/stats').then((response) => setStats(response.data)).catch(() => {});
     }
+
   }, [hasRole]);
 
   const currentRole = useMemo(() => {

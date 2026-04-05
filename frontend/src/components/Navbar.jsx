@@ -2,9 +2,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import {
+  CalendarDays,
+  Database,
   LayoutDashboard,
   TrendingUp,
-  ShieldCheck,
   Briefcase,
   Users,
   Settings,
@@ -18,10 +19,16 @@ const navItems = {
   ],
   INVESTOR: [
     { name: 'Portfolio', path: '/portfolio', icon: Briefcase },
-    { name: 'Risk Profiler', path: '/risk-profiler', icon: ShieldCheck },
     { name: 'Advisors', path: '/advisors', icon: Users },
   ],
+  ADVISOR: [
+    { name: 'Appointments', path: '/appointments', icon: CalendarDays },
+  ],
+  ANALYST: [
+    { name: 'Data Management', path: '/data-management', icon: Database },
+  ],
   ADMIN: [
+    { name: 'Data Management', path: '/data-management', icon: Database },
     { name: 'Admin Panel', path: '/admin', icon: Settings },
   ],
 };
@@ -41,6 +48,8 @@ export default function Navbar() {
   const items = [
     ...navItems.common,
     ...(hasRole('INVESTOR') ? navItems.INVESTOR : []),
+    ...(hasRole('ADVISOR') ? navItems.ADVISOR : []),
+    ...(hasRole('ANALYST') ? navItems.ANALYST : []),
     ...(hasRole('ADMIN') ? navItems.ADMIN : []),
   ];
 

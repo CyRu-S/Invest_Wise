@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  BadgePlus,
+  Clock3,
   Filter,
   Mail,
   Search,
   ShieldCheck,
+  ShieldOff,
   Sparkles,
   Trash2,
   UserCheck,
@@ -32,21 +35,40 @@ function getRoleCount(users, role) {
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
+  const [inviteForm, setInviteForm] = useState({
+    fullName: '',
+    email: '',
+    role: 'INVESTOR',
+    password: '',
+  });
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const fetchData = async () => {
     try {
-      const [usersResponse, statsResponse] = await Promise.all([
+      const [usersResponse, statsResponse, auditResponse] = await Promise.allSettled([
         api.get('/admin/users'),
         api.get('/admin/stats'),
+        api.get('/admin/audit-logs'),
       ]);
 
-      setUsers(usersResponse.data);
-      setStats(statsResponse.data);
+      if (usersResponse.status === 'fulfilled') {
+        setUsers(usersResponse.value.data);
+      }
+
+      if (statsResponse.status === 'fulfilled') {
+        setStats(statsResponse.value.data);
+      }
+
+      if (auditResponse.status === 'fulfilled') {
+        setAuditLogs(auditResponse.value.data);
+      } else {
+        setAuditLogs([]);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -86,15 +108,62 @@ export default function AdminPanel() {
     }
   };
 
+  const handleInviteSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await api.post('/admin/users', inviteForm);
+      const tempPassword = response.data?.data?.temporaryPassword;
+      setMessage({
+        type: 'success',
+        text: tempPassword
+          ? `User created successfully. Temporary password: ${tempPassword}`
+          : 'User created successfully.',
+      });
+      setInviteForm({
+        fullName: '',
+        email: '',
+        role: 'INVESTOR',
+        password: '',
+      });
+      fetchData();
+    } catch (error) {
+      console.error(error);
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Unable to create this account right now.',
+      });
+    }
+  };
+
+  const handleSuspensionToggle = async (user) => {
+    try {
+      const response = await api.patch(`/admin/users/${user.id}/suspension`, {
+        suspended: !user.suspended,
+        reason: user.suspended ? 'Account reactivated by admin.' : 'Account suspended by admin.',
+      });
+      setMessage({ type: 'success', text: response.data?.message || 'Account updated.' });
+      fetchData();
+    } catch (error) {
+      console.error(error);
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Unable to update account access right now.',
+      });
+    }
+  };
+
   const derivedStats = useMemo(() => {
     const verifiedUsers = users.filter((user) => user.verified).length;
     const googleUsers = users.filter((user) => user.authProvider === 'GOOGLE').length;
     const adminUsers = getRoleCount(users, 'ADMIN');
+    const suspendedUsers = users.filter((user) => user.suspended).length;
 
     return {
       verifiedUsers,
       googleUsers,
       adminUsers,
+      suspendedUsers,
     };
   }, [users]);
 
@@ -124,7 +193,6 @@ export default function AdminPanel() {
 
   return (
     <div className="page-container admin-panel-page" id="admin-panel-page">
-
       <section className="admin-panel-hero">
         <div className="admin-panel-hero__copy">
           <span className="admin-panel-hero__kicker">
@@ -156,8 +224,8 @@ export default function AdminPanel() {
             <strong>{derivedStats.googleUsers}</strong>
           </div>
           <div className="admin-panel-hero__stat admin-panel-hero__stat--indigo">
-            <span>Admin seats</span>
-            <strong>{derivedStats.adminUsers}</strong>
+            <span>Suspended</span>
+            <strong>{stats?.suspendedUsers ?? derivedStats.suspendedUsers}</strong>
           </div>
         </div>
       </section>
@@ -198,6 +266,75 @@ export default function AdminPanel() {
       </section>
 
       <section className="admin-panel-workspace">
+        <div className="admin-panel-invite">
+          <div className="admin-panel-invite__copy">
+            <span className="admin-panel-section-eyebrow">
+              <BadgePlus size={16} />
+              Invite Workflow
+            </span>
+            <h2>Create a new platform account without leaving admin control.</h2>
+            <p>
+              Add advisors, analysts, investors, or extra admin seats directly from this workspace.
+              New accounts are provisioned immediately and can be adjusted from the same table below.
+            </p>
+          </div>
+
+          <form className="admin-panel-invite__form" onSubmit={handleInviteSubmit}>
+            <label className="admin-panel-field">
+              <input
+                type="text"
+                value={inviteForm.fullName}
+                onChange={(event) =>
+                  setInviteForm((currentForm) => ({ ...currentForm, fullName: event.target.value }))
+                }
+                placeholder="Full name"
+              />
+            </label>
+
+            <label className="admin-panel-field">
+              <input
+                type="email"
+                value={inviteForm.email}
+                onChange={(event) =>
+                  setInviteForm((currentForm) => ({ ...currentForm, email: event.target.value }))
+                }
+                placeholder="Email address"
+              />
+            </label>
+
+            <label className="admin-panel-field admin-panel-field--select">
+              <span className="admin-panel-field__label">Role</span>
+              <select
+                value={inviteForm.role}
+                onChange={(event) =>
+                  setInviteForm((currentForm) => ({ ...currentForm, role: event.target.value }))
+                }
+              >
+                <option value="INVESTOR">Investor</option>
+                <option value="ADVISOR">Advisor</option>
+                <option value="ANALYST">Analyst</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </label>
+
+            <label className="admin-panel-field">
+              <input
+                type="text"
+                value={inviteForm.password}
+                onChange={(event) =>
+                  setInviteForm((currentForm) => ({ ...currentForm, password: event.target.value }))
+                }
+                placeholder="Temporary password (optional)"
+              />
+            </label>
+
+            <button type="submit" className="admin-panel-invite__submit">
+              <BadgePlus size={16} />
+              Create account
+            </button>
+          </form>
+        </div>
+
         <div className="admin-panel-workspace__header">
           <div>
             <span className="admin-panel-section-eyebrow">
@@ -207,8 +344,8 @@ export default function AdminPanel() {
             <h2>Search, filter, and update accounts in-place.</h2>
           </div>
           <p>
-            Use the controls below to audit the active user list, adjust role assignments, and
-            remove accounts when necessary.
+            Use the controls below to audit the active user list, adjust role assignments, suspend
+            access when needed, and remove accounts when necessary.
           </p>
         </div>
 
@@ -245,7 +382,6 @@ export default function AdminPanel() {
                 <tr>
                   <th>User</th>
                   <th>Role</th>
-                  <th>Provider</th>
                   <th>Verified</th>
                   <th>Joined</th>
                   <th>Actions</th>
@@ -274,14 +410,14 @@ export default function AdminPanel() {
                       </span>
                     </td>
                     <td>
-                      <span className={`admin-panel-badge admin-panel-badge--provider-${user.authProvider?.toLowerCase()}`}>
-                        {user.authProvider}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`admin-panel-badge ${user.verified ? 'admin-panel-badge--verified' : 'admin-panel-badge--muted'}`}>
-                        {user.verified ? 'Verified' : 'Pending'}
-                      </span>
+                      <div className="admin-panel-status-stack">
+                        <span className={`admin-panel-badge ${user.verified ? 'admin-panel-badge--verified' : 'admin-panel-badge--muted'}`}>
+                          {user.verified ? 'Verified' : 'Pending'}
+                        </span>
+                        {user.suspended ? (
+                          <span className="admin-panel-badge admin-panel-badge--suspended">Suspended</span>
+                        ) : null}
+                      </div>
                     </td>
                     <td>{formatDate(user.createdAt)}</td>
                     <td>
@@ -298,6 +434,14 @@ export default function AdminPanel() {
                             <option value="ADMIN">ADMIN</option>
                           </select>
                         </label>
+
+                        <button
+                          className={`admin-panel-suspension ${user.suspended ? 'is-reactivate' : ''}`}
+                          onClick={() => handleSuspensionToggle(user)}
+                        >
+                          {user.suspended ? <ShieldCheck size={15} /> : <ShieldOff size={15} />}
+                          {user.suspended ? 'Reactivate' : 'Suspend'}
+                        </button>
 
                         <button
                           className="admin-panel-delete"
@@ -318,6 +462,47 @@ export default function AdminPanel() {
             <UserCheck size={20} />
             <h3>No users match the current filters.</h3>
             <p>Try broadening the search or resetting the selected role filter.</p>
+          </div>
+        )}
+      </section>
+
+      <section className="admin-panel-audit">
+        <div className="admin-panel-audit__header">
+          <div>
+            <span className="admin-panel-section-eyebrow">
+              <Clock3 size={16} />
+              Audit Trail
+            </span>
+            <h2>Review the most recent admin-side changes.</h2>
+          </div>
+          <p>
+            Role changes, invites, suspension actions, and deletions all appear here for quick operational context.
+          </p>
+        </div>
+
+        {auditLogs.length ? (
+          <div className="admin-panel-audit__list">
+            {auditLogs.map((log) => (
+              <div key={log.id} className="admin-panel-audit__item">
+                <div>
+                  <span>{log.action.replaceAll('_', ' ')}</span>
+                  <strong>{log.targetIdentifier || log.targetType}</strong>
+                </div>
+                <div>
+                  <strong>{log.actorName}</strong>
+                  <small>{log.details || 'No extra details recorded.'}</small>
+                </div>
+                <div>
+                  <small>{formatDate(log.createdAt)}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="admin-panel-empty">
+            <Clock3 size={20} />
+            <h3>No audit entries yet.</h3>
+            <p>The latest admin changes will start appearing here as actions are taken.</p>
           </div>
         )}
       </section>

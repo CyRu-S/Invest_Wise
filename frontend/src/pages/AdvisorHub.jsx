@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight,
   BadgeCheck,
   BriefcaseBusiness,
   CalendarDays,
+  CalendarRange,
   ChevronDown,
   ChevronUp,
   Clock3,
+  CircleOff,
   FileText,
   ShieldCheck,
   Sparkles,
@@ -19,9 +20,9 @@ import api from '../services/api';
 import './AdvisorRiskPages.css';
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     maximumFractionDigits: 0,
   }).format(Number(value || 0));
 }
@@ -41,7 +42,7 @@ function formatDateTime(value) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('en-IN', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -56,6 +57,13 @@ export default function AdvisorHub() {
   const [appointmentsOpen, setAppointmentsOpen] = useState(false);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [appointmentsError, setAppointmentsError] = useState('');
+  const [actionLoadingId, setActionLoadingId] = useState('');
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const [rescheduleModal, setRescheduleModal] = useState(null);
+  const [rescheduleSlots, setRescheduleSlots] = useState([]);
+  const [rescheduleNotes, setRescheduleNotes] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('');
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,6 +73,14 @@ export default function AdvisorHub() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle('modal-open', Boolean(rescheduleModal));
+
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [rescheduleModal]);
 
   const loadAppointments = async () => {
     setAppointmentsLoading(true);
@@ -87,6 +103,91 @@ export default function AdvisorHub() {
 
     if (nextOpen && !appointments.length && !appointmentsLoading && !appointmentsError) {
       await loadAppointments();
+    }
+  };
+
+  const handleCancelAppointment = async (appointment) => {
+    setActionLoadingId(`cancel:${appointment.id}`);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const response = await api.patch(`/advisors/appointments/${appointment.id}/cancel`);
+      setAppointments((currentAppointments) =>
+        currentAppointments.map((item) => (item.id === appointment.id ? response.data : item))
+      );
+      setMessage({ type: 'success', text: 'Booking cancelled and wallet amount refunded.' });
+    } catch (error) {
+      console.error(error);
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Unable to cancel this booking right now.',
+      });
+    } finally {
+      setActionLoadingId('');
+    }
+  };
+
+  const openRescheduleModal = async (appointment) => {
+    setRescheduleModal(appointment);
+    setRescheduleNotes(appointment.notes || '');
+    setRescheduleTime('');
+    setRescheduleSlots([]);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const response = await api.get(`/advisors/${appointment.advisorId}/availability`);
+      const openSlots = response.data
+        .filter((slot) => !slot.booked)
+        .filter((slot) => new Date(slot.startTime).getTime() > Date.now());
+      setRescheduleSlots(openSlots);
+    } catch (error) {
+      console.error(error);
+      setMessage({
+        type: 'error',
+        text: 'Unable to load advisor availability for rescheduling.',
+      });
+    }
+  };
+
+  const handleReschedule = async () => {
+    if (!rescheduleModal) return;
+
+    const payload = {
+      notes: rescheduleNotes,
+    };
+
+    if (rescheduleTime && String(rescheduleTime).startsWith('slot:')) {
+      payload.availabilitySlotId = Number(rescheduleTime.replace('slot:', ''));
+      const matchedSlot = rescheduleSlots.find((slot) => String(slot.id) === String(payload.availabilitySlotId));
+      payload.scheduledAt = matchedSlot?.startTime;
+    } else if (rescheduleTime) {
+      payload.scheduledAt = rescheduleTime;
+    } else {
+      setMessage({ type: 'error', text: 'Choose a new slot or enter a preferred time first.' });
+      return;
+    }
+
+    setRescheduleLoading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const response = await api.patch(`/advisors/appointments/${rescheduleModal.id}/reschedule`, payload);
+      setAppointments((currentAppointments) =>
+        currentAppointments.map((item) => (item.id === rescheduleModal.id ? response.data : item))
+      );
+      setMessage({ type: 'success', text: 'Booking rescheduled successfully.' });
+      setRescheduleModal(null);
+      setRescheduleSlots([]);
+      setRescheduleNotes('');
+      setRescheduleTime('');
+    } catch (error) {
+      console.error(error);
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Unable to reschedule this booking right now.',
+      });
+    } finally {
+      setRescheduleLoading(false);
     }
   };
 
@@ -182,6 +283,12 @@ export default function AdvisorHub() {
         </div>
       </section>
 
+      {message.text ? (
+        <div className={`advisor-appointments-feedback advisor-appointments-feedback--${message.type}`}>
+          {message.text}
+        </div>
+      ) : null}
+
       {appointmentsOpen && (
         <section className="advisor-bookings-panel">
           <div className="advisor-bookings-panel__header">
@@ -250,6 +357,33 @@ export default function AdvisorHub() {
                       <strong>{appointment.notes || 'No notes added yet'}</strong>
                     </div>
                   </div>
+
+                  {['PENDING', 'CONFIRMED'].includes(appointment.status) ? (
+                    <div className="advisor-booking-card__actions">
+                      <button
+                        type="button"
+                        className="advisor-appointment-card__action advisor-appointment-card__action--primary"
+                        disabled={Boolean(actionLoadingId)}
+                        onClick={() => openRescheduleModal(appointment)}
+                      >
+                        <CalendarRange size={16} />
+                        Reschedule
+                      </button>
+                      <button
+                        type="button"
+                        className="advisor-appointment-card__action advisor-appointment-card__action--ghost"
+                        disabled={Boolean(actionLoadingId)}
+                        onClick={() => handleCancelAppointment(appointment)}
+                      >
+                        <CircleOff size={16} />
+                        {actionLoadingId === `cancel:${appointment.id}` ? 'Cancelling...' : 'Cancel'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="advisor-booking-card__footnote">
+                      This session is already {appointment.status.toLowerCase()}.
+                    </div>
+                  )}
                 </MagicBentoCard>
               ))}
             </MagicBentoGrid>
@@ -330,22 +464,11 @@ export default function AdvisorHub() {
               <div className="advisor-card__actions">
                 <Link
                   to={`/advisors/${advisor.id}`}
-                  className="advisor-card__action advisor-card__action--primary"
-                >
-                  View Profile
-                  <ArrowRight size={16} />
-                </Link>
-                <button
-                  className="advisor-card__action advisor-card__action--secondary"
-                  onClick={() =>
-                    alert(
-                      'Stripe payment would be triggered here. Configure your Stripe keys to enable this feature.'
-                    )
-                  }
+                  className="advisor-card__action advisor-card__action--secondary advisor-card__action--full"
                 >
                   <Wallet size={16} />
                   Hire Advisor
-                </button>
+                </Link>
               </div>
             </MagicBentoCard>
           ))}
@@ -365,6 +488,78 @@ export default function AdvisorHub() {
           </div>
         </MagicBentoCard>
       )}
+
+      {rescheduleModal ? (
+        <div className="advisor-detail-modal-overlay" onClick={() => setRescheduleModal(null)}>
+          <div className="advisor-detail-modal advisor-detail-modal--compact" onClick={(event) => event.stopPropagation()}>
+            <div className="advisor-detail-modal__header">
+              <div>
+                <span className="advisor-card__eyebrow">
+                  <CalendarRange size={15} />
+                  Reschedule booking
+                </span>
+                <h3>{rescheduleModal.advisorName}</h3>
+                <p>Choose a new published slot or enter a preferred time for this consultation.</p>
+              </div>
+              <button className="portfolio-modal__close" onClick={() => setRescheduleModal(null)}>
+                Close
+              </button>
+            </div>
+
+            <label className="advisor-detail-modal__field" htmlFor="reschedule-slot">
+              <span>Available slot</span>
+              <select
+                id="reschedule-slot"
+                value={String(rescheduleTime).startsWith('slot:') ? rescheduleTime : ''}
+                onChange={(event) => setRescheduleTime(event.target.value)}
+              >
+                <option value="">Choose an open slot</option>
+                {rescheduleSlots.map((slot) => (
+                  <option key={slot.id} value={`slot:${slot.id}`}>
+                    {formatDateTime(slot.startTime)} to {formatDateTime(slot.endTime)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="advisor-detail-modal__field" htmlFor="reschedule-manual-time">
+              <span>Preferred time</span>
+              <input
+                id="reschedule-manual-time"
+                type="datetime-local"
+                value={String(rescheduleTime).startsWith('slot:') ? '' : rescheduleTime}
+                onChange={(event) => setRescheduleTime(event.target.value)}
+              />
+            </label>
+
+            <label className="advisor-detail-modal__field" htmlFor="reschedule-notes">
+              <span>Notes</span>
+              <textarea
+                id="reschedule-notes"
+                rows="4"
+                value={rescheduleNotes}
+                onChange={(event) => setRescheduleNotes(event.target.value)}
+                placeholder="Anything new the advisor should know for the rescheduled session?"
+              />
+            </label>
+
+            <div className="advisor-detail-modal__actions">
+              <button
+                type="button"
+                className="advisor-card__action advisor-card__action--secondary advisor-detail-card__cta"
+                disabled={rescheduleLoading}
+                onClick={handleReschedule}
+              >
+                <CalendarRange size={16} />
+                {rescheduleLoading ? 'Updating...' : 'Confirm new time'}
+              </button>
+              <button type="button" className="advisor-card__action advisor-card__action--primary" onClick={() => setRescheduleModal(null)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

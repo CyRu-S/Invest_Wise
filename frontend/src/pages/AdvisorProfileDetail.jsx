@@ -1,170 +1,462 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  CalendarDays,
+  Clock3,
+  FileText,
+  Sparkles,
+  Star,
+  Wallet,
+} from 'lucide-react';
+import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import api from '../services/api';
+import './AdvisorRiskPages.css';
+
+function formatCurrency(value) {
+  if (value === null || value === undefined || value === '') return '₹0';
+
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+}
+
+function formatDateTime(value) {
+  if (!value) return 'Schedule pending';
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  return new Intl.DateTimeFormat('en-IN', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(parsed);
+}
+
+function getInitials(name) {
+  return (
+    name
+      ?.split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || '?'
+  );
+}
+
+function renderStars(rating) {
+  const normalizedRating = Math.max(0, Math.min(5, Number(rating || 0)));
+  const fullStars = Math.round(normalizedRating);
+  return `${'★'.repeat(fullStars)}${'☆'.repeat(5 - fullStars)}`;
+}
 
 export default function AdvisorProfileDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [advisor, setAdvisor] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [bookingModal, setBookingModal] = useState(false);
-  const [bookingDate, setBookingDate] = useState('');
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState('');
+  const [manualSchedule, setManualSchedule] = useState('');
   const [bookingNotes, setBookingNotes] = useState('');
+  const [bookingLoading, setBookingLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  useEffect(() => {
-    api.get(`/advisors/${id}`)
-      .then(r => setAdvisor(r.data))
-      .catch(() => navigate('/advisors'))
-      .finally(() => setLoading(false));
-  }, [id]);
+  const loadAdvisor = async () => {
+    setLoading(true);
 
-  const handleBook = async () => {
-    setMessage({ type: '', text: '' });
     try {
-      await api.post(`/advisors/${id}/book`, {
-        scheduledAt: bookingDate,
-        notes: bookingNotes
-      });
-      setMessage({ type: 'success', text: 'Appointment booked successfully!' });
-      setBookingModal(false);
-      setBookingDate('');
-      setBookingNotes('');
-    } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Booking failed' });
+      const [advisorResponse, profileResponse] = await Promise.all([
+        api.get(`/advisors/${id}`),
+        api.get('/investor/profile'),
+      ]);
+
+      setAdvisor(advisorResponse.data);
+      setProfile(profileResponse.data);
+    } catch (error) {
+      console.error(error);
+      navigate('/advisors');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderStars = (rating) => {
-    const full = Math.floor(rating);
-    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  useEffect(() => {
+    loadAdvisor();
+  }, [id, navigate]);
+
+  useEffect(() => {
+    document.body.classList.toggle('modal-open', bookingModalOpen);
+
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [bookingModalOpen]);
+
+  const availableSlots = useMemo(() => {
+    return (advisor?.availability || [])
+      .filter((slot) => !slot.booked)
+      .filter((slot) => new Date(slot.startTime).getTime() > Date.now())
+      .sort((left, right) => new Date(left.startTime).getTime() - new Date(right.startTime).getTime());
+  }, [advisor]);
+
+  const walletBalance = Number(profile?.walletBalance || 0);
+  const consultationFee = Number(advisor?.consultationFee || 0);
+  const hasEnoughBalance = walletBalance >= consultationFee;
+  const selectedSlot = availableSlots.find((slot) => String(slot.id) === String(selectedSlotId));
+
+  const handleBook = async () => {
+    if (!advisor) return;
+    if (!hasEnoughBalance) {
+      setMessage({
+        type: 'error',
+        text: 'Add more funds to your wallet before confirming this consultation.',
+      });
+      return;
+    }
+
+    const payload = {
+      notes: bookingNotes,
+    };
+
+    if (selectedSlotId) {
+      payload.availabilitySlotId = Number(selectedSlotId);
+      payload.scheduledAt = selectedSlot?.startTime;
+    } else if (manualSchedule) {
+      payload.scheduledAt = manualSchedule;
+    } else {
+      setMessage({ type: 'error', text: 'Choose an available slot or enter a preferred time.' });
+      return;
+    }
+
+    setBookingLoading(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      const response = await api.post(`/advisors/${id}/book`, payload);
+      setMessage({
+        type: 'success',
+        text: response.data?.message || 'Appointment booked successfully.',
+      });
+      setBookingModalOpen(false);
+      setSelectedSlotId('');
+      setManualSchedule('');
+      setBookingNotes('');
+      await loadAdvisor();
+    } catch (error) {
+      console.error(error);
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Unable to complete this booking right now.',
+      });
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
-  if (loading) return <div className="page-container"><div className="loading-spinner"><div className="spinner"></div></div></div>;
-  if (!advisor) return null;
-
-  const initials = advisor.name?.split(' ').map(n => n[0]).join('') || '?';
-
-  return (
-    <div className="page-container" id="advisor-detail-page">
-      <button className="btn btn-ghost btn-sm" onClick={() => navigate('/advisors')} style={{ marginBottom: '1rem' }}>
-        ← Back to Advisors
-      </button>
-
-      {message.text && <div className={message.type === 'success' ? 'success-message' : 'error-message'}>{message.text}</div>}
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '1.5rem', alignItems: 'start' }}>
-        {/* Main Content */}
-        <div>
-          <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-              <div className="advisor-avatar" style={{ width: 80, height: 80, fontSize: '1.75rem' }}>
-                {initials}
-              </div>
-              <div style={{ flex: 1 }}>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>{advisor.name}</h1>
-                <span className="badge badge-info" style={{ marginBottom: '0.75rem', display: 'inline-block' }}>
-                  {advisor.specialization}
-                </span>
-                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
-                  <div>
-                    <span style={{ color: '#fcd34d', fontSize: '1.1rem' }}>{renderStars(advisor.averageRating)}</span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginLeft: '0.5rem' }}>
-                      {advisor.averageRating} ({advisor.totalReviews} reviews)
-                    </span>
-                  </div>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                    {advisor.experienceYears}+ years experience
-                  </span>
-                </div>
-              </div>
-            </div>
+  if (loading) {
+    return (
+      <div className="page-container insight-page advisor-detail-page">
+        <div className="insight-loading-shell">
+          <div className="loading-spinner">
+            <div className="spinner" />
           </div>
-
-          {/* Bio */}
-          <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ marginBottom: '0.75rem' }}>📋 About</h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, fontSize: '0.95rem' }}>
-              {advisor.bio || 'No bio available.'}
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid-3">
-            <div className="glass-card stat-card">
-              <div className="stat-label">Specialization</div>
-              <div className="stat-value" style={{ fontSize: '1rem' }}>{advisor.specialization || '—'}</div>
-            </div>
-            <div className="glass-card stat-card">
-              <div className="stat-label">Experience</div>
-              <div className="stat-value">{advisor.experienceYears}+<span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 400 }}> years</span></div>
-            </div>
-            <div className="glass-card stat-card">
-              <div className="stat-label">Client Reviews</div>
-              <div className="stat-value">{advisor.totalReviews}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar — Hire Panel */}
-        <div className="glass-card" style={{ position: 'sticky', top: '80px' }}>
-          <h3 style={{ marginBottom: '1rem' }}>📅 Book Consultation</h3>
-
-          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <div className="advisor-fee" style={{ fontSize: '2rem' }}>
-              ${Number(advisor.consultationFee).toFixed(2)}
-            </div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>per session</div>
-          </div>
-
-          <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem' }}>
-            {['One-on-one video consultation', 'Personalized investment strategy', 'Portfolio review & optimization', 'Risk assessment guidance'].map((item, i) => (
-              <li key={i} style={{ padding: '0.4rem 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                ✓ {item}
-              </li>
-            ))}
-          </ul>
-
-          <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={() => setBookingModal(true)}>
-            Book Appointment
-          </button>
-
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.75rem', textAlign: 'center' }}>
-            Contact: {advisor.email}
-          </p>
         </div>
       </div>
+    );
+  }
 
-      {/* Booking Modal */}
-      {bookingModal && (
-        <div className="modal-overlay" onClick={() => setBookingModal(false)}>
-          <div className="glass-card modal-content" onClick={e => e.stopPropagation()}>
-            <h3 style={{ marginBottom: '1rem' }}>Book {advisor.name}</h3>
+  if (!advisor) return null;
 
-            <div className="form-group">
-              <label>Preferred Date & Time</label>
-              <input type="datetime-local" className="form-control"
-                value={bookingDate} onChange={e => setBookingDate(e.target.value)} />
+  const initials = getInitials(advisor.name);
+
+  return (
+    <div className="page-container insight-page advisor-detail-page" id="advisor-detail-page">
+      <Link to="/advisors" className="advisor-detail__back">
+        <ArrowLeft size={16} />
+        Back to advisors
+      </Link>
+
+      {message.text ? (
+        <div className={`advisor-appointments-feedback advisor-appointments-feedback--${message.type}`}>
+          {message.text}
+        </div>
+      ) : null}
+
+      <section className="insight-hero advisor-detail-hero">
+        <div className="insight-hero__copy">
+          <span className="insight-hero__kicker">
+            <Sparkles size={16} />
+            Advisor Profile
+          </span>
+          <div className="advisor-detail-identity">
+            <div className="advisor-avatar advisor-detail-identity__avatar">{initials}</div>
+            <div className="advisor-detail-identity__copy">
+              <span className="advisor-card__eyebrow">
+                <BadgeCheck size={15} />
+                Verified advisor
+              </span>
+              <h1>{advisor.name}</h1>
+              <span className="advisor-card__pill">{advisor.specialization || 'General financial planning'}</span>
+            </div>
+          </div>
+          <p>{advisor.bio || 'Practical portfolio guidance, planning support, and tailored market insights.'}</p>
+          <div className="advisor-detail-rating">
+            <span>{renderStars(advisor.averageRating)}</span>
+            <strong>{Number(advisor.averageRating || 0).toFixed(1)}</strong>
+            <small>{advisor.totalReviews || 0} reviews</small>
+          </div>
+        </div>
+
+        <div className="insight-hero__summary advisor-detail-summary">
+          <div className="insight-hero__stat insight-hero__stat--indigo">
+            <span>Session fee</span>
+            <strong>{formatCurrency(advisor.consultationFee)}</strong>
+          </div>
+          <div className="insight-hero__stat insight-hero__stat--indigo">
+            <span>Wallet balance</span>
+            <strong>{formatCurrency(profile?.walletBalance)}</strong>
+          </div>
+          <div className="insight-hero__stat insight-hero__stat--indigo">
+            <span>Experience</span>
+            <strong>{advisor.experienceYears || 0}+ yrs</strong>
+          </div>
+          <div className="insight-hero__stat insight-hero__stat--indigo">
+            <span>Open slots</span>
+            <strong>{availableSlots.length}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="advisor-detail-layout">
+        <MagicBentoGrid className="advisor-detail-grid" pattern="uniform" glowColor="99, 102, 241" spotlightRadius={280}>
+          <MagicBentoCard className="advisor-detail-card advisor-detail-card--overview" clickEffect={false}>
+            <div className="advisor-detail-card__header">
+              <span className="advisor-section-head__eyebrow">
+                <FileText size={16} />
+                Session coverage
+              </span>
+            </div>
+            <div className="advisor-detail-card__body">
+              <h2>Book directly from your wallet without leaving the advisory workspace.</h2>
+              <p>
+                Choose a published availability slot or suggest a time, add discussion notes, and confirm the fee from your existing wallet balance.
+              </p>
+            </div>
+            <div className="advisor-detail-benefits">
+              {[
+                'One-on-one planning consultation',
+                'Personalized investment discussion',
+                'Portfolio and risk review support',
+                'Actionable follow-up notes for your next move',
+              ].map((benefit) => (
+                <div key={benefit} className="advisor-detail-benefit">
+                  <BadgeCheck size={15} />
+                  <span>{benefit}</span>
+                </div>
+              ))}
+            </div>
+          </MagicBentoCard>
+
+          <MagicBentoCard className="advisor-detail-card advisor-detail-card--booking" clickEffect={false}>
+            <div className="advisor-detail-card__header">
+              <span className="advisor-section-head__eyebrow">
+                <Wallet size={16} />
+                Wallet checkout
+              </span>
+            </div>
+            <div className="advisor-detail-card__body">
+              <h3>{formatCurrency(advisor.consultationFee)}</h3>
+              <p>
+                {hasEnoughBalance
+                  ? 'Your wallet is funded for this consultation.'
+                  : 'Your wallet balance is below the consultation fee.'}
+              </p>
+            </div>
+            <div className="advisor-detail-checkout">
+              <div>
+                <span>Wallet balance</span>
+                <strong>{formatCurrency(profile?.walletBalance)}</strong>
+              </div>
+              <div>
+                <span>Contact</span>
+                <strong>{advisor.email}</strong>
+              </div>
+            </div>
+            <div className="advisor-detail-card__actions">
+              <button
+                type="button"
+                className="advisor-card__action advisor-card__action--secondary advisor-detail-card__cta"
+                disabled={!hasEnoughBalance}
+                onClick={() => setBookingModalOpen(true)}
+              >
+                <CalendarDays size={16} />
+                Confirm & pay from wallet
+              </button>
+              {!hasEnoughBalance ? (
+                <Link to="/portfolio" className="advisor-detail-card__link">
+                  Add wallet funds first
+                </Link>
+              ) : null}
+            </div>
+          </MagicBentoCard>
+        </MagicBentoGrid>
+      </section>
+
+      <section className="advisor-detail-section">
+        <div className="advisor-section-head">
+          <div>
+            <span className="advisor-section-head__eyebrow">
+              <Clock3 size={16} />
+              Availability
+            </span>
+            <h2>Choose from the published consultation slots.</h2>
+          </div>
+        </div>
+
+        {availableSlots.length ? (
+          <MagicBentoGrid className="advisor-detail-slots" pattern="uniform" glowColor="99, 102, 241" spotlightRadius={260}>
+            {availableSlots.map((slot) => (
+              <MagicBentoCard key={slot.id} className="advisor-detail-slot" clickEffect>
+                <div className="advisor-detail-slot__top">
+                  <span className="advisor-card__eyebrow">
+                    <CalendarDays size={15} />
+                    Open slot
+                  </span>
+                  <strong>{formatDateTime(slot.startTime)}</strong>
+                </div>
+                <p>Ends {formatDateTime(slot.endTime)}</p>
+                <button
+                  type="button"
+                  className="advisor-detail-slot__button"
+                  onClick={() => {
+                    setBookingModalOpen(true);
+                    setSelectedSlotId(String(slot.id));
+                    setManualSchedule('');
+                  }}
+                >
+                  Select this time
+                </button>
+              </MagicBentoCard>
+            ))}
+          </MagicBentoGrid>
+        ) : (
+          <MagicBentoCard className="advisor-empty" clickEffect={false}>
+            <div>
+              <span className="advisor-section-head__eyebrow">
+                <Clock3 size={16} />
+                No open slots
+              </span>
+              <h2 style={{ marginTop: '0.7rem' }}>This advisor has not published open times yet.</h2>
+              <p>You can still suggest a preferred time from the booking flow and let the advisor confirm it later.</p>
+            </div>
+          </MagicBentoCard>
+        )}
+      </section>
+
+      {bookingModalOpen ? (
+        <div className="advisor-detail-modal-overlay" onClick={() => setBookingModalOpen(false)}>
+          <div className="advisor-detail-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="advisor-detail-modal__header">
+              <div>
+                <span className="advisor-card__eyebrow">
+                  <Wallet size={15} />
+                  Wallet booking
+                </span>
+                <h3>Book {advisor.name}</h3>
+                <p>Choose a live slot or enter a preferred time. The consultation fee will be deducted from your wallet immediately.</p>
+              </div>
+              <button className="portfolio-modal__close" onClick={() => setBookingModalOpen(false)}>
+                Close
+              </button>
             </div>
 
-            <div className="form-group">
-              <label>Notes (optional)</label>
-              <textarea className="form-control" rows={3} placeholder="Describe what you'd like to discuss..."
-                value={bookingNotes} onChange={e => setBookingNotes(e.target.value)}
-                style={{ resize: 'vertical' }} />
+            <div className="advisor-detail-modal__summary">
+              <div>
+                <span>Consultation fee</span>
+                <strong>{formatCurrency(advisor.consultationFee)}</strong>
+              </div>
+              <div>
+                <span>Wallet balance</span>
+                <strong>{formatCurrency(profile?.walletBalance)}</strong>
+              </div>
             </div>
 
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-              Fee: <strong>${Number(advisor.consultationFee).toFixed(2)}</strong> (charged via Stripe)
-            </p>
+            {availableSlots.length ? (
+              <label className="advisor-detail-modal__field" htmlFor="advisor-slot-select">
+                <span>Available slot</span>
+                <select
+                  id="advisor-slot-select"
+                  value={selectedSlotId}
+                  onChange={(event) => {
+                    setSelectedSlotId(event.target.value);
+                    if (event.target.value) setManualSchedule('');
+                  }}
+                >
+                  <option value="">Choose an open slot</option>
+                  {availableSlots.map((slot) => (
+                    <option key={slot.id} value={slot.id}>
+                      {formatDateTime(slot.startTime)} to {formatDateTime(slot.endTime)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-primary" onClick={handleBook} disabled={!bookingDate}>Confirm Booking</button>
-              <button className="btn btn-ghost" onClick={() => setBookingModal(false)}>Cancel</button>
+            <label className="advisor-detail-modal__field" htmlFor="advisor-manual-time">
+              <span>Preferred time</span>
+              <input
+                id="advisor-manual-time"
+                type="datetime-local"
+                value={manualSchedule}
+                onChange={(event) => {
+                  setManualSchedule(event.target.value);
+                  if (event.target.value) setSelectedSlotId('');
+                }}
+              />
+            </label>
+
+            <label className="advisor-detail-modal__field" htmlFor="advisor-booking-notes">
+              <span>Notes</span>
+              <textarea
+                id="advisor-booking-notes"
+                rows="4"
+                value={bookingNotes}
+                onChange={(event) => setBookingNotes(event.target.value)}
+                placeholder="What would you like to discuss during this consultation?"
+              />
+            </label>
+
+            {!hasEnoughBalance ? (
+              <div className="advisor-detail-modal__warning">
+                Add more funds to your wallet before confirming this session.
+              </div>
+            ) : null}
+
+            <div className="advisor-detail-modal__actions">
+              <button
+                type="button"
+                className="advisor-card__action advisor-card__action--secondary advisor-detail-card__cta"
+                disabled={bookingLoading || !hasEnoughBalance}
+                onClick={handleBook}
+              >
+                <Wallet size={16} />
+                {bookingLoading ? 'Processing...' : 'Confirm booking'}
+              </button>
+              <button type="button" className="advisor-card__action advisor-card__action--primary" onClick={() => setBookingModalOpen(false)}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

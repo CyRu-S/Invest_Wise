@@ -545,6 +545,18 @@
   letter-spacing: -0.02em;
 }
 
+.advisor-booking-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.advisor-booking-card__footnote {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
 .advisor-booking-card__status {
   display: inline-flex;
   align-items: center;
@@ -692,6 +704,10 @@
   align-items: center;
 }
 
+.advisor-card__action--full {
+  width: 100%;
+}
+
 .advisor-card__action {
   border: none;
   text-decoration: none;
@@ -747,13 +763,709 @@
   line-height: 1.7;
 }
 
+.advisor-detail-page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.advisor-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.advisor-detail__back:hover {
+  color: var(--text-primary);
+}
+
+.advisor-detail-identity {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+
+.advisor-detail-identity__avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 24px;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.advisor-detail-identity__copy {
+  display: grid;
+  gap: 0.35rem;
+  align-content: center;
+}
+
+.advisor-detail-rating {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  color: #fde68a;
+}
+
+.advisor-detail-rating strong,
+.advisor-detail-rating small {
+  color: var(--text-primary);
+}
+
+.advisor-detail-layout,
+.advisor-detail-section,
+.advisor-availability-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.advisor-detail-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+}
+
+.advisor-detail-card,
+.advisor-detail-slot,
+.advisor-availability-card {
+  padding: 1.35rem;
+}
+
+.advisor-detail-card--overview,
+.advisor-detail-card--booking {
+  min-height: 100%;
+}
+
+.advisor-detail-card__header,
+.advisor-availability-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.advisor-detail-card__body,
+.advisor-availability-card__summary,
+.advisor-detail-checkout {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.advisor-detail-card__body h2,
+.advisor-detail-card__body h3,
+.advisor-availability-card__header h3 {
+  margin: 0.35rem 0 0;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.advisor-detail-card__body h2 {
+  font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+}
+
+.advisor-detail-card__body p,
+.advisor-detail-slot p,
+.advisor-detail-modal__header p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.advisor-detail-benefits {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.advisor-detail-benefit {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.8rem 0.9rem;
+  color: var(--text-primary);
+}
+
+.advisor-detail-checkout,
+.advisor-availability-card__summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.advisor-detail-checkout > div,
+.advisor-availability-card__summary > div {
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.95rem 1rem;
+}
+
+.advisor-detail-checkout span,
+.advisor-availability-card__summary span,
+.advisor-detail-modal__field span,
+.advisor-availability-list__item span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.advisor-detail-checkout strong,
+.advisor-availability-card__summary strong {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.advisor-detail-card__actions,
+.advisor-availability-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.advisor-detail-card__cta {
+  width: 100%;
+}
+
+.advisor-detail-card__link {
+  color: #c7d2fe;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.advisor-detail-slots {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.advisor-detail-slot {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.advisor-detail-slot__top {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.advisor-detail-slot__top strong {
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.advisor-detail-slot__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.16);
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.65rem 0.9rem;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.advisor-detail-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: calc(64px + 1.25rem) 1rem 1.5rem;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.advisor-detail-modal {
+  width: min(680px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 64px - 2.5rem);
+  overflow-y: auto;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(9, 12, 24, 0.98)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
+  box-shadow:
+    0 35px 100px rgba(2, 6, 23, 0.68),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 1.35rem;
+}
+
+.advisor-detail-modal--compact {
+  width: min(620px, calc(100vw - 2rem));
+}
+
+.advisor-detail-modal__header,
+.advisor-detail-modal__summary,
+.advisor-detail-modal__actions,
+.advisor-availability-list__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.advisor-detail-modal__header h3 {
+  margin: 0.45rem 0 0;
+  font-size: 1.5rem;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.advisor-detail-modal__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.advisor-detail-modal__summary > div,
+.advisor-availability-list__item {
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.95rem 1rem;
+}
+
+.advisor-detail-modal__summary span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.advisor-detail-modal__summary strong {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1.12rem;
+}
+
+.advisor-detail-modal__field {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.advisor-detail-modal__field input,
+.advisor-detail-modal__field select,
+.advisor-detail-modal__field textarea {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  padding: 0.95rem 1rem;
+  font: inherit;
+  outline: none;
+}
+
+.advisor-detail-modal__field textarea {
+  resize: vertical;
+}
+
+.advisor-detail-modal__warning {
+  margin-top: 1rem;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 18px;
+  background: rgba(245, 158, 11, 0.08);
+  color: #fde68a;
+  padding: 0.9rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.advisor-detail-modal__actions {
+  margin-top: 1rem;
+}
+
+.advisor-appointments-section-head--availability {
+  margin-top: 0.2rem;
+}
+
+.advisor-availability-layout {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  margin-bottom: 1.25rem;
+}
+
+.advisor-availability-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.advisor-availability-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.advisor-availability-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.advisor-availability-list__item {
+  align-items: center;
+}
+
+.advisor-availability-list__item strong,
+.advisor-availability-list__item small {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.advisor-availability-list__item small {
+  color: var(--text-secondary);
+}
+
+.advisor-bookings-panel__state--compact {
+  min-height: 120px;
+}
+
+.advisor-appointments-summary .insight-hero__stat strong {
+  font-size: 1.22rem;
+}
+
+.advisor-appointments-feedback {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  padding: 0.9rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.advisor-appointments-feedback--success {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.22);
+  color: #a7f3d0;
+}
+
+.advisor-appointments-feedback--error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.22);
+  color: #fecaca;
+}
+
+.advisor-appointments-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.advisor-appointments-spotlight,
+.advisor-appointments-note,
+.advisor-appointment-card {
+  padding: 1.35rem;
+}
+
+.advisor-appointments-spotlight,
+.advisor-appointments-note {
+  min-height: 100%;
+}
+
+.advisor-appointments-spotlight__top,
+.advisor-appointments-section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.advisor-appointments-spotlight h2,
+.advisor-appointments-note h3,
+.advisor-appointments-section-head h2 {
+  margin-top: 0.45rem;
+  letter-spacing: -0.03em;
+}
+
+.advisor-appointments-spotlight h2 {
+  font-size: clamp(1.9rem, 2.8vw, 2.7rem);
+}
+
+.advisor-appointments-spotlight p,
+.advisor-appointments-note p {
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.advisor-appointments-spotlight__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.48rem 0.75rem;
+  background: rgba(99, 102, 241, 0.14);
+  color: #c7d2fe;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.advisor-appointments-spotlight__details,
+.advisor-appointment-card__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.advisor-appointments-spotlight__details {
+  margin-top: 1rem;
+}
+
+.advisor-appointments-spotlight__details > div,
+.advisor-appointment-card__meta > div {
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.95rem 1rem;
+}
+
+.advisor-appointments-spotlight__details span,
+.advisor-appointment-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.advisor-appointments-spotlight__details strong,
+.advisor-appointment-card__meta strong {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1rem;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+.advisor-appointments-note {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.advisor-appointments-note__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.advisor-appointments-note__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #c7d2fe;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.advisor-appointments-note__body {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.advisor-appointments-note__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.advisor-appointments-note__link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    background var(--transition-base);
+}
+
+.advisor-appointments-note__link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(129, 140, 248, 0.24);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.advisor-appointments-section-head {
+  margin-bottom: 1rem;
+}
+
+.advisor-appointments-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.advisor-appointments-filter {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.58rem 0.9rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    background var(--transition-base),
+    color var(--transition-base);
+}
+
+.advisor-appointments-filter:hover {
+  transform: translateY(-1px);
+  border-color: rgba(129, 140, 248, 0.24);
+  color: var(--text-primary);
+}
+
+.advisor-appointments-filter.is-active {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(129, 140, 248, 0.24);
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.14);
+}
+
+.advisor-appointments-grid {
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.advisor-appointment-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.advisor-appointment-card__top,
+.advisor-appointment-card__identity {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.advisor-appointment-card__identity {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.advisor-appointment-card__identity h3 {
+  margin: 0.45rem 0 0;
+  font-size: 1.35rem;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.advisor-appointment-card__identity p {
+  margin-top: 0.28rem;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.advisor-appointment-card__meta {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.advisor-appointment-card__meta--notes {
+  grid-column: 1 / -1;
+}
+
+.advisor-appointment-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.advisor-appointment-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 0.6rem 0.95rem;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    background var(--transition-base),
+    color var(--transition-base),
+    opacity var(--transition-base);
+}
+
+.advisor-appointment-card__action:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.advisor-appointment-card__action:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.advisor-appointment-card__action--primary {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(129, 140, 248, 0.22);
+  color: #ffffff;
+  box-shadow: 0 14px 38px rgba(99, 102, 241, 0.14);
+}
+
+.advisor-appointment-card__action--ghost {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(148, 163, 184, 0.14);
+  color: var(--text-secondary);
+}
+
+.advisor-appointment-card__footnote {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.advisor-appointment-card__timestamp {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 @media (max-width: 1100px) {
   .insight-hero,
   .risk-profiler-layout {
     grid-template-columns: 1fr;
   }
 
-  .advisor-bookings-grid {
+  .advisor-appointments-overview,
+  .advisor-bookings-grid,
+  .advisor-detail-grid,
+  .advisor-availability-layout {
     grid-template-columns: 1fr;
   }
 }
@@ -773,6 +1485,14 @@
 
   .insight-hero__summary,
   .advisor-card__metrics,
+  .advisor-appointments-grid,
+  .advisor-detail-slots,
+  .advisor-detail-checkout,
+  .advisor-detail-modal__summary,
+  .advisor-availability-form,
+  .advisor-availability-card__summary,
+  .advisor-appointments-spotlight__details,
+  .advisor-appointment-card__meta,
   .risk-result-panel__actions,
   .advisor-booking-card__meta {
     grid-template-columns: 1fr;
@@ -787,11 +1507,19 @@
   }
 
   .advisor-section-head,
+  .advisor-appointments-section-head,
   .advisor-bookings-panel__header,
   .advisor-card__top,
   .advisor-card__header,
   .advisor-card__actions,
+  .advisor-detail-identity,
+  .advisor-appointment-card__top,
+  .advisor-appointment-card__identity,
   .advisor-booking-card__top,
+  .advisor-booking-card__actions,
+  .advisor-detail-modal__header,
+  .advisor-detail-modal__actions,
+  .advisor-availability-list__item,
   .risk-question-card__top,
   .risk-result-panel__actions {
     flex-direction: column;

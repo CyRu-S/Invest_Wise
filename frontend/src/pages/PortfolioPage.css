@@ -81,6 +81,45 @@
   line-height: 1.75;
 }
 
+.portfolio-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.35rem;
+}
+
+.portfolio-hero__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.78rem 1.05rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    background var(--transition-base);
+}
+
+.portfolio-hero__button:hover {
+  transform: translateY(-1px);
+}
+
+.portfolio-hero__button--primary {
+  background: rgba(99, 102, 241, 0.18);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.portfolio-hero__button--ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
 .portfolio-hero__chips {
   display: flex;
   flex-wrap: wrap;
@@ -411,6 +450,39 @@
   margin-top: 1rem;
 }
 
+.portfolio-quick-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.portfolio-quick-amount {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.65rem 0.95rem;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    background var(--transition-base);
+}
+
+.portfolio-quick-amount:hover {
+  transform: translateY(-1px);
+  border-color: rgba(129, 140, 248, 0.24);
+}
+
+.portfolio-quick-amount.is-active {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(129, 140, 248, 0.24);
+}
+
 .portfolio-modal__header {
   align-items: flex-start;
 }
@@ -520,5 +592,14 @@
   .portfolio-hero__copy h1 {
     max-width: none;
     font-size: 2.3rem;
+  }
+
+  .portfolio-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portfolio-hero__button {
+    width: 100%;
   }
 }
