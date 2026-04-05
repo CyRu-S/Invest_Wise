@@ -73,13 +73,23 @@ function AppRoutes() {
 }
 
 export default function App() {
-  const [showLoader, setShowLoader] = useState(true);
+  const [showLoader, setShowLoader] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return !window.sessionStorage.getItem('investwise-loader-seen');
+  });
+
+  const handleLoaderFinished = () => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('investwise-loader-seen', 'true');
+    }
+    setShowLoader(false);
+  };
 
   return (
     <BrowserRouter>
       <AuthProvider>
         <ClickSpark sparkColor="#818cf8" sparkSize={12} sparkRadius={20} sparkCount={10} duration={500} />
-        {showLoader && <WebsiteLoader onFinished={() => setShowLoader(false)} />}
+        {showLoader && <WebsiteLoader onFinished={handleLoaderFinished} />}
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
