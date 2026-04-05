@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
@@ -6,26 +6,12 @@ import api from '../services/api';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
 function GoogleSignInButton({ onSuccess, onError, loading }) {
-  const googleButtonRef = useRef(null);
-
-  const handleClick = () => {
-    if (loading) return;
-
-    const clickableElement =
-      googleButtonRef.current?.querySelector('[role="button"]') ||
-      googleButtonRef.current?.querySelector('iframe') ||
-      googleButtonRef.current?.firstElementChild;
-
-    clickableElement?.click?.();
-  };
-
   return (
     <div className="relative">
       <button
         type="button"
-        onClick={handleClick}
         disabled={loading}
-        className="backdrop-blur-[2px] w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+        className="pointer-events-none backdrop-blur-[2px] w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
       >
         <svg width="22" height="22" viewBox="0 0 48 48" aria-hidden="true">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -37,9 +23,7 @@ function GoogleSignInButton({ onSuccess, onError, loading }) {
       </button>
 
       <div
-        ref={googleButtonRef}
-        className="absolute inset-0 overflow-hidden rounded-full opacity-0 pointer-events-none"
-        aria-hidden="true"
+        className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-full opacity-0"
       >
         <GoogleLogin
           onSuccess={onSuccess}
@@ -48,7 +32,7 @@ function GoogleSignInButton({ onSuccess, onError, loading }) {
           theme="outline"
           shape="pill"
           size="large"
-          width="100%"
+          width="384"
           text="continue_with"
         />
       </div>
