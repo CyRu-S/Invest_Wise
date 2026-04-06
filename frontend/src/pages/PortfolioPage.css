@@ -417,6 +417,11 @@
   color: #fecaca;
 }
 
+.portfolio-status--refund {
+  background: rgba(96, 165, 250, 0.12);
+  color: #bfdbfe;
+}
+
 .portfolio-transaction-meta span {
   display: inline-flex;
   align-items: center;

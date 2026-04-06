@@ -57,17 +57,28 @@ function formatMonthKey(value) {
 }
 
 function normalizeTransaction(transaction) {
-  const fallbackDirection =
-    transaction.type === 'DEPOSIT' || transaction.type === 'SELL' ? 'INCOME' : 'EXPENSE';
-  const cashflowType = transaction.cashflowType || fallbackDirection;
+  const isAdvisorRefund =
+    transaction.type === 'DEPOSIT' &&
+    String(transaction.referenceId || '').startsWith('APPOINTMENT-') &&
+    String(transaction.description || '').toLowerCase().includes('refund');
+  const fallbackCashflow = isAdvisorRefund
+    ? 'REFUND'
+    : transaction.type === 'DEPOSIT' || transaction.type === 'SELL'
+      ? 'INCOME'
+      : 'EXPENSE';
+  const cashflowType = transaction.cashflowType || fallbackCashflow;
+  const fallbackBalanceDirection =
+    transaction.type === 'BUY' || transaction.type === 'FEE_PAYMENT' ? 'DEBIT' : 'CREDIT';
+  const balanceDirection = transaction.balanceDirection || fallbackBalanceDirection;
   const amount = Number(transaction.amount || 0);
 
   return {
     ...transaction,
     amount,
     cashflowType,
+    balanceDirection,
     category: transaction.category || 'General',
-    signedAmount: cashflowType === 'INCOME' ? amount : -amount,
+    signedAmount: balanceDirection === 'CREDIT' ? amount : balanceDirection === 'DEBIT' ? -amount : 0,
     title: transaction.title || transaction.description || transaction.type,
   };
 }

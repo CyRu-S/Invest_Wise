@@ -53,13 +53,23 @@ function titleCase(value) {
 }
 
 function normalizeTransaction(transaction) {
-  const fallbackCashflow =
-    transaction.type === 'DEPOSIT' || transaction.type === 'SELL' ? 'INCOME' : 'EXPENSE';
+  const isAdvisorRefund =
+    transaction.type === 'DEPOSIT' &&
+    String(transaction.referenceId || '').startsWith('APPOINTMENT-') &&
+    String(transaction.description || '').toLowerCase().includes('refund');
+  const fallbackCashflow = isAdvisorRefund
+    ? 'REFUND'
+    : transaction.type === 'DEPOSIT' || transaction.type === 'SELL'
+      ? 'INCOME'
+      : 'EXPENSE';
+  const fallbackBalanceDirection =
+    transaction.type === 'BUY' || transaction.type === 'FEE_PAYMENT' ? 'DEBIT' : 'CREDIT';
 
   return {
     ...transaction,
     amount: Number(transaction.amount || 0),
     cashflowType: transaction.cashflowType || fallbackCashflow,
+    balanceDirection: transaction.balanceDirection || fallbackBalanceDirection,
     category: transaction.category || 'General',
     title: transaction.title || transaction.description || titleCase(transaction.type),
   };
@@ -457,6 +467,7 @@ export default function Portfolio() {
                   <option value="ALL">All types</option>
                   <option value="INCOME">Income</option>
                   <option value="EXPENSE">Expense</option>
+                  <option value="REFUND">Refund</option>
                 </select>
               </label>
 
@@ -520,8 +531,8 @@ export default function Portfolio() {
                             {titleCase(transaction.cashflowType)}
                           </span>
                         </td>
-                        <td className={transaction.cashflowType === 'INCOME' ? 'is-positive' : 'is-negative'}>
-                          {transaction.cashflowType === 'INCOME' ? '+' : '-'}
+                        <td className={transaction.balanceDirection === 'CREDIT' ? 'is-positive' : 'is-negative'}>
+                          {transaction.balanceDirection === 'CREDIT' ? '+' : '-'}
                           {formatCurrency(transaction.amount)}
                         </td>
                         <td>
