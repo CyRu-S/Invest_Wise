@@ -119,13 +119,13 @@ export default function LandingPage() {
         </div>
 
         {/* Dashboard Preview / Visual */}
-        <div className="mt-20 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500">
-          <div className="relative rounded-2xl border border-white/10 glass-card p-2 md:p-4 shadow-2xl shadow-primary/20">
+        <div className="landing-hero-preview mt-20 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-500">
+          <div className="landing-hero-preview__frame relative rounded-2xl border border-white/10 glass-card p-2 md:p-4 shadow-2xl shadow-primary/20">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-3xl blur opacity-20" />
-            <div className="relative bg-black/40 rounded-xl overflow-hidden aspect-[16/9] md:aspect-[21/9] flex items-center justify-center border border-white/5">
-              <MagicGrid className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full p-4 md:p-6 opacity-90 h-full items-center">
+            <div className="landing-hero-preview__screen relative bg-black/40 rounded-xl overflow-hidden flex items-center justify-center border border-white/5">
+              <MagicGrid className="landing-hero-preview__grid grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 w-full p-4 md:p-6 opacity-90 h-full items-center">
                 {/* Card 1: Portfolio Growth */}
-                <MagicCard className="glass-card p-6 rounded-xl border-white/5 bg-black/50 flex flex-col justify-between" enableStars={true}>
+                <MagicCard className="landing-hero-preview__card glass-card p-6 rounded-xl border-white/5 bg-black/50 flex flex-col justify-between" enableStars={true}>
                   <div className="flex justify-between items-start mb-4 relative z-10">
                     <div>
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Portfolio</p>
@@ -137,16 +137,16 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="relative z-10 mt-auto">
-                    <div className="h-16 w-full flex items-end gap-1">
-                      {[30, 45, 35, 60, 50, 75, 65, 80].map((h, i) => (
-                        <div key={i} className="flex-1 bg-primary/20 hover:bg-primary/60 transition-colors rounded-t-sm" style={{ height: `${h}%` }}></div>
+                    <div className="h-28 w-full flex items-end gap-2">
+                      {[34, 44, 36, 58, 48, 74, 63, 79].map((h, i) => (
+                        <div key={i} className="flex-1 bg-primary/20 hover:bg-primary/60 transition-colors rounded-t-md" style={{ height: `${h}%` }}></div>
                       ))}
                     </div>
                   </div>
                 </MagicCard>
 
                 {/* Card 2: Main Balance (Center Highlight) */}
-                <MagicCard className="glass-card p-6 rounded-xl border-primary/20 bg-primary/5 transform md:scale-110 shadow-2xl shadow-primary/10 flex flex-col justify-between relative overflow-hidden" particleCount={30} enableStars={true}>
+                <MagicCard className="landing-hero-preview__card landing-hero-preview__card--featured glass-card p-6 rounded-xl border-primary/20 bg-primary/5 transform md:scale-110 shadow-2xl shadow-primary/10 flex flex-col justify-between relative overflow-hidden" particleCount={30} enableStars={true}>
                   <div className="absolute top-0 right-0 p-4 opacity-50">
                     <Wallet className="w-24 h-24 text-primary/10 -rotate-12" />
                   </div>
@@ -174,7 +174,7 @@ export default function LandingPage() {
                 </MagicCard>
 
                 {/* Card 3: Recent Activity */}
-                <MagicCard className="glass-card p-6 rounded-xl border-white/5 bg-black/50" enableStars={true}>
+                <MagicCard className="landing-hero-preview__card glass-card p-6 rounded-xl border-white/5 bg-black/50" enableStars={true}>
                   <div className="flex items-center justify-between mb-6 relative z-10">
                     <h4 className="text-sm font-semibold text-white">Recent Activity</h4>
                     <LandingButton
@@ -218,12 +218,27 @@ export default function LandingPage() {
       <section className="py-10 border-y border-white/5 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-sm font-medium text-muted-foreground mb-6 uppercase tracking-wider">Trusted by investors from top institutions</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-            <span className="text-xl font-bold font-mono">FINCORP</span>
-            <span className="text-xl font-bold font-serif italic">TrustBank</span>
-            <span className="text-xl font-bold tracking-widest">WËALTH</span>
-            <span className="text-xl font-bold">Invest<span className="text-primary">AI</span></span>
-            <span className="text-xl font-bold font-mono">Ledger</span>
+          <div className="landing-trust-logos flex flex-wrap justify-center items-center gap-6 md:gap-10 transition-all duration-500">
+            <div className="landing-brand-logo landing-brand-logo--sbi" aria-label="SBI">
+              <span className="landing-brand-mark" />
+              <span className="landing-brand-text">SBI</span>
+            </div>
+            <div className="landing-brand-logo landing-brand-logo--hdfc" aria-label="HDFC">
+              <span className="landing-brand-mark" />
+              <span className="landing-brand-text">HDFC</span>
+            </div>
+            <div className="landing-brand-logo landing-brand-logo--icici" aria-label="ICICI Prudential">
+              <span className="landing-brand-mark" />
+              <span className="landing-brand-text">ICICI</span>
+            </div>
+            <div className="landing-brand-logo landing-brand-logo--groww" aria-label="Groww">
+              <span className="landing-brand-mark" />
+              <span className="landing-brand-text">Groww</span>
+            </div>
+            <div className="landing-brand-logo landing-brand-logo--zerodha" aria-label="Zerodha">
+              <span className="landing-brand-mark" />
+              <span className="landing-brand-text">Zerodha</span>
+            </div>
           </div>
         </div>
       </section>
