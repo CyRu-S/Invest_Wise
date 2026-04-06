@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -361,102 +362,105 @@ export default function AdvisorProfileDetail() {
         )}
       </section>
 
-      {bookingModalOpen ? (
-        <div className="advisor-detail-modal-overlay" onClick={() => setBookingModalOpen(false)}>
-          <div className="advisor-detail-modal" onClick={(event) => event.stopPropagation()}>
-            <div className="advisor-detail-modal__header">
-              <div>
-                <span className="advisor-card__eyebrow">
-                  <Wallet size={15} />
-                  Wallet booking
-                </span>
-                <h3>Book {advisor.name}</h3>
-                <p>Choose a live slot or enter a preferred time. The consultation fee will be deducted from your wallet immediately.</p>
+      {bookingModalOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <div className="advisor-detail-modal-overlay" onClick={() => setBookingModalOpen(false)}>
+              <div className="advisor-detail-modal" onClick={(event) => event.stopPropagation()}>
+                <div className="advisor-detail-modal__header">
+                  <div>
+                    <span className="advisor-card__eyebrow">
+                      <Wallet size={15} />
+                      Wallet booking
+                    </span>
+                    <h3>Book {advisor.name}</h3>
+                    <p>Choose a live slot or enter a preferred time. The consultation fee will be deducted from your wallet immediately.</p>
+                  </div>
+                  <button className="portfolio-modal__close" onClick={() => setBookingModalOpen(false)}>
+                    Close
+                  </button>
+                </div>
+
+                <div className="advisor-detail-modal__summary">
+                  <div>
+                    <span>Consultation fee</span>
+                    <strong>{formatCurrency(advisor.consultationFee)}</strong>
+                  </div>
+                  <div>
+                    <span>Wallet balance</span>
+                    <strong>{formatCurrency(profile?.walletBalance)}</strong>
+                  </div>
+                </div>
+
+                {availableSlots.length ? (
+                  <label className="advisor-detail-modal__field" htmlFor="advisor-slot-select">
+                    <span>Available slot</span>
+                    <select
+                      id="advisor-slot-select"
+                      value={selectedSlotId}
+                      onChange={(event) => {
+                        setSelectedSlotId(event.target.value);
+                        if (event.target.value) setManualSchedule('');
+                      }}
+                    >
+                      <option value="">Choose an open slot</option>
+                      {availableSlots.map((slot) => (
+                        <option key={slot.id} value={slot.id}>
+                          {formatDateTime(slot.startTime)} to {formatDateTime(slot.endTime)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+
+                <label className="advisor-detail-modal__field" htmlFor="advisor-manual-time">
+                  <span>Preferred time</span>
+                  <input
+                    id="advisor-manual-time"
+                    type="datetime-local"
+                    value={manualSchedule}
+                    onChange={(event) => {
+                      setManualSchedule(event.target.value);
+                      if (event.target.value) setSelectedSlotId('');
+                    }}
+                  />
+                </label>
+
+                <label className="advisor-detail-modal__field" htmlFor="advisor-booking-notes">
+                  <span>Notes</span>
+                  <textarea
+                    id="advisor-booking-notes"
+                    rows="4"
+                    value={bookingNotes}
+                    onChange={(event) => setBookingNotes(event.target.value)}
+                    placeholder="What would you like to discuss during this consultation?"
+                  />
+                </label>
+
+                {!hasEnoughBalance ? (
+                  <div className="advisor-detail-modal__warning">
+                    Add more funds to your wallet before confirming this session.
+                  </div>
+                ) : null}
+
+                <div className="advisor-detail-modal__actions">
+                  <button
+                    type="button"
+                    className="advisor-card__action advisor-card__action--secondary advisor-detail-card__cta"
+                    disabled={bookingLoading || !hasEnoughBalance}
+                    onClick={handleBook}
+                  >
+                    <Wallet size={16} />
+                    {bookingLoading ? 'Processing...' : 'Confirm booking'}
+                  </button>
+                  <button type="button" className="advisor-card__action advisor-card__action--primary" onClick={() => setBookingModalOpen(false)}>
+                    Cancel
+                  </button>
+                </div>
               </div>
-              <button className="portfolio-modal__close" onClick={() => setBookingModalOpen(false)}>
-                Close
-              </button>
-            </div>
-
-            <div className="advisor-detail-modal__summary">
-              <div>
-                <span>Consultation fee</span>
-                <strong>{formatCurrency(advisor.consultationFee)}</strong>
-              </div>
-              <div>
-                <span>Wallet balance</span>
-                <strong>{formatCurrency(profile?.walletBalance)}</strong>
-              </div>
-            </div>
-
-            {availableSlots.length ? (
-              <label className="advisor-detail-modal__field" htmlFor="advisor-slot-select">
-                <span>Available slot</span>
-                <select
-                  id="advisor-slot-select"
-                  value={selectedSlotId}
-                  onChange={(event) => {
-                    setSelectedSlotId(event.target.value);
-                    if (event.target.value) setManualSchedule('');
-                  }}
-                >
-                  <option value="">Choose an open slot</option>
-                  {availableSlots.map((slot) => (
-                    <option key={slot.id} value={slot.id}>
-                      {formatDateTime(slot.startTime)} to {formatDateTime(slot.endTime)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-
-            <label className="advisor-detail-modal__field" htmlFor="advisor-manual-time">
-              <span>Preferred time</span>
-              <input
-                id="advisor-manual-time"
-                type="datetime-local"
-                value={manualSchedule}
-                onChange={(event) => {
-                  setManualSchedule(event.target.value);
-                  if (event.target.value) setSelectedSlotId('');
-                }}
-              />
-            </label>
-
-            <label className="advisor-detail-modal__field" htmlFor="advisor-booking-notes">
-              <span>Notes</span>
-              <textarea
-                id="advisor-booking-notes"
-                rows="4"
-                value={bookingNotes}
-                onChange={(event) => setBookingNotes(event.target.value)}
-                placeholder="What would you like to discuss during this consultation?"
-              />
-            </label>
-
-            {!hasEnoughBalance ? (
-              <div className="advisor-detail-modal__warning">
-                Add more funds to your wallet before confirming this session.
-              </div>
-            ) : null}
-
-            <div className="advisor-detail-modal__actions">
-              <button
-                type="button"
-                className="advisor-card__action advisor-card__action--secondary advisor-detail-card__cta"
-                disabled={bookingLoading || !hasEnoughBalance}
-                onClick={handleBook}
-              >
-                <Wallet size={16} />
-                {bookingLoading ? 'Processing...' : 'Confirm booking'}
-              </button>
-              <button type="button" className="advisor-card__action advisor-card__action--primary" onClick={() => setBookingModalOpen(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

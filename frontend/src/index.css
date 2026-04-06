@@ -412,6 +412,13 @@ footer {
 
   body.modal-open {
     overflow: hidden;
+    height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  body.modal-open #root {
+    height: 100dvh;
+    overflow: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
