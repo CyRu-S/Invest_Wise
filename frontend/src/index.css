@@ -859,6 +859,117 @@ footer {
     flex-shrink: 0;
   }
 
+  .navbar-mobile-controls {
+    display: none;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+  }
+
+  .navbar-mobile-role {
+    padding-inline: 0.6rem;
+    font-size: 0.66rem;
+  }
+
+  .navbar-mobile-toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 12px 30px rgba(5, 10, 24, 0.22);
+  }
+
+  .navbar-mobile-panel {
+    display: none;
+  }
+
+  .navbar-mobile-panel__user {
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .navbar-mobile-panel__identity {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .navbar-mobile-panel__name {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.96rem;
+    font-weight: 700;
+  }
+
+  .navbar-mobile-panel__label {
+    margin: 0.18rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.77rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .navbar-mobile-panel__links {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 0.95rem;
+  }
+
+  .navbar-mobile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.82rem 0.95rem;
+    border-radius: 18px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base), transform var(--transition-base);
+  }
+
+  .navbar-mobile-link:hover,
+  .navbar-mobile-link.active {
+    color: var(--text-primary);
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(129, 140, 248, 0.24);
+    transform: translateY(-1px);
+  }
+
+  .navbar-mobile-link__icon {
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.1);
+    color: #c7d2fe;
+    flex-shrink: 0;
+  }
+
+  .navbar-mobile-logout {
+    margin-top: 1rem;
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid rgba(248, 113, 113, 0.22);
+    background: rgba(127, 29, 29, 0.16);
+    color: #fecaca;
+    padding: 0.9rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    font: inherit;
+    font-weight: 600;
+    box-shadow: 0 14px 32px rgba(7, 10, 24, 0.2);
+  }
+
   .user-badge {
     padding: 0.35rem 0.75rem;
     background: var(--gradient-primary);
@@ -1340,21 +1451,50 @@ footer {
    Responsive
    ================================================ */
   @media (max-width: 768px) {
-    .tubelight-tab-text {
+    .navbar {
+      padding: 0 0.9rem;
+    }
+
+    .navbar-inner {
+      height: 72px;
+      gap: 0.8rem;
+    }
+
+    .navbar-brand__wordmark {
+      font-size: 1.55rem;
+    }
+
+    .navbar-brand__mark {
+      width: 1.55rem;
+      height: 1.55rem;
+    }
+
+    .navbar-desktop-nav,
+    .navbar-desktop-user {
       display: none;
     }
-    .tubelight-tab-icon {
-      display: inline-flex;
+
+    .navbar-mobile-controls {
+      display: flex;
     }
-    .tubelight-tab {
-      padding: 0.5rem 0.65rem;
-    }
-    .tubelight-nav {
-      gap: 0;
-    }
-    .navbar-user .user-badge,
-    .navbar-user > span:not(:last-child) {
-      display: none;
+
+    .navbar-mobile-panel {
+      display: block;
+      position: absolute;
+      top: calc(100% + 0.45rem);
+      left: 0.9rem;
+      right: 0.9rem;
+      padding: 1rem;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        linear-gradient(180deg, rgba(12, 16, 30, 0.96), rgba(7, 10, 22, 0.98)),
+        linear-gradient(135deg, rgba(99, 102, 241, 0.1), transparent 40%);
+      box-shadow:
+        0 24px 60px rgba(5, 10, 24, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
+      z-index: 110;
     }
 
     .page-header h1 {

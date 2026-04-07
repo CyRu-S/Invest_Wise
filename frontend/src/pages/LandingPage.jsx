@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, TrendingUp, Shield, Wallet, CheckCircle2, Star, Zap, Globe, Users, Link as LinkIcon } from 'lucide-react';
+import { Sparkles, ArrowRight, TrendingUp, Shield, Wallet, CheckCircle2, Zap, Globe, Users, Link as LinkIcon } from 'lucide-react';
 import { MagicCard, MagicGrid } from '../components/MagicCard';
 import SplineChainBackground from '../components/SplineChainBackground';
 import Particles from '../components/Particles';
 import DecryptedText from '../components/DecryptedText';
+import LogoLoop from '../components/ui/logo-loop';
+import { TestimonialsColumn } from '../components/ui/testimonials-columns-1';
 
 function LandingButton({
   to,
@@ -49,6 +51,80 @@ function LandingButton({
 }
 
 export default function LandingPage() {
+  const institutionLogos = [
+    { name: 'SBI Funds', mark: 'SB', tag: 'Banking', gradient: 'from-blue-600 to-blue-400' },
+    { name: 'HDFC AMC', mark: 'HD', tag: 'Advisory', gradient: 'from-rose-600 to-red-400' },
+    { name: 'ICICI Pru', mark: 'IC', tag: 'Wealth', gradient: 'from-orange-600 to-amber-400' },
+    { name: 'Axis MF', mark: 'AX', tag: 'Research', gradient: 'from-fuchsia-600 to-pink-500' },
+    { name: 'Nippon India', mark: 'NI', tag: 'Capital', gradient: 'from-sky-600 to-cyan-400' },
+    { name: 'Kotak AMC', mark: 'KT', tag: 'Private', gradient: 'from-red-700 to-orange-500' },
+    { name: 'Groww', mark: 'GW', tag: 'Broker', gradient: 'from-emerald-600 to-teal-400' },
+    { name: 'Zerodha', mark: 'ZD', tag: 'Trading', gradient: 'from-blue-500 to-sky-300' },
+    { name: 'Angel One', mark: 'AO', tag: 'Digital', gradient: 'from-violet-600 to-purple-400' },
+    { name: 'Upstox', mark: 'UP', tag: 'Invest', gradient: 'from-indigo-600 to-blue-400' },
+  ];
+
+  const investorTestimonials = [
+    {
+      text: 'InvestWise gave me one place to track my wallet, funds, and advisor bookings without feeling buried in financial jargon.',
+      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
+      name: 'Aarohi Mehta',
+      role: 'Growth Analyst',
+    },
+    {
+      text: 'The spending and balance visuals finally made my monthly money movement obvious. That clarity changed how I invest.',
+      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+      name: 'Rohan Kapoor',
+      role: 'Product Lead',
+    },
+    {
+      text: 'I booked an advisor, topped up my wallet, and reviewed my portfolio in one smooth flow. It feels premium and practical.',
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80',
+      name: 'Mira Shah',
+      role: 'Founder',
+    },
+    {
+      text: 'The dashboard surfaces exactly what matters first. I can see risk, expenses, and performance without hunting through tabs.',
+      image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80',
+      name: 'Kabir Nanda',
+      role: 'Consultant',
+    },
+    {
+      text: 'As someone new to mutual funds, the product felt approachable. The visuals are polished, but the decisions stay understandable.',
+      image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
+      name: 'Naina Joshi',
+      role: 'Marketing Manager',
+    },
+    {
+      text: 'What stood out most was the consistency. Whether I was exploring funds or checking transactions, the experience stayed sharp.',
+      image: 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=200&q=80',
+      name: 'Ishaan Verma',
+      role: 'Engineering Manager',
+    },
+    {
+      text: 'The advisor workflow and portfolio view together feel like a complete financial cockpit rather than just another tracker.',
+      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
+      name: 'Sana Khanna',
+      role: 'Operations Head',
+    },
+    {
+      text: 'I loved how quickly I could understand my cash movement. The insights section reads like guidance, not just data.',
+      image: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=200&q=80',
+      name: 'Dev Arora',
+      role: 'Business Analyst',
+    },
+    {
+      text: 'Most finance apps overwhelm me with noise. This one feels deliberate, calm, and genuinely useful on both desktop and mobile.',
+      image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=200&q=80',
+      name: 'Ritika Bansal',
+      role: 'Design Strategist',
+    },
+  ];
+
+  const firstColumn = investorTestimonials.slice(0, 3);
+  const secondColumn = investorTestimonials.slice(3, 6);
+  const thirdColumn = investorTestimonials.slice(6, 9);
+
   return (
     <div id="landing-page" className="min-h-screen relative bg-transparent text-foreground selection:bg-primary/20">
 
@@ -215,31 +291,12 @@ export default function LandingPage() {
       </section>
 
       {/* Trusted By Section (Social Proof) */}
-      <section className="py-10 border-y border-white/5 bg-white/5 backdrop-blur-sm">
+      <section className="py-12 border-y border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-6 uppercase tracking-wider">Trusted by investors from top institutions</p>
-          <div className="landing-trust-logos flex flex-wrap justify-center items-center gap-6 md:gap-10 transition-all duration-500">
-            <div className="landing-brand-logo landing-brand-logo--sbi" aria-label="SBI">
-              <span className="landing-brand-mark" />
-              <span className="landing-brand-text">SBI</span>
-            </div>
-            <div className="landing-brand-logo landing-brand-logo--hdfc" aria-label="HDFC">
-              <span className="landing-brand-mark" />
-              <span className="landing-brand-text">HDFC</span>
-            </div>
-            <div className="landing-brand-logo landing-brand-logo--icici" aria-label="ICICI Prudential">
-              <span className="landing-brand-mark" />
-              <span className="landing-brand-text">ICICI</span>
-            </div>
-            <div className="landing-brand-logo landing-brand-logo--groww" aria-label="Groww">
-              <span className="landing-brand-mark" />
-              <span className="landing-brand-text">Groww</span>
-            </div>
-            <div className="landing-brand-logo landing-brand-logo--zerodha" aria-label="Zerodha">
-              <span className="landing-brand-mark" />
-              <span className="landing-brand-text">Zerodha</span>
-            </div>
-          </div>
+          <p className="text-sm font-medium text-muted-foreground mb-7 uppercase tracking-[0.28em]">
+            Trusted by investors from top institutions
+          </p>
+          <LogoLoop logos={institutionLogos} speed={30} />
         </div>
       </section>
 
@@ -373,33 +430,21 @@ export default function LandingPage() {
       {/* Testimonials Section */}
       <section className="py-24 px-4 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-bold text-center mb-16">Loved by Investors</h2>
+          <div className="mx-auto mb-14 flex max-w-[620px] flex-col items-center text-center">
+            <div className="mb-5 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
+              Testimonials
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Loved by Investors</h2>
+            <p className="mt-5 text-lg text-muted-foreground">
+              Real people use InvestWise to track balances, understand spending, and move through portfolio decisions with more confidence.
+            </p>
+          </div>
 
-          <MagicGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { name: 'Rahul S.', role: 'Software Engineer', quote: 'InvestWise simplified my investment strategy completely. The analytics are spot on!' },
-              { name: 'Priya M.', role: 'Small Business Owner', quote: 'I finally understand where my money is going. The dashboard is intuitive and beautiful.' },
-              { name: 'Ankit R.', role: 'Product Manager', quote: 'The best platform for tracking mutual funds I\'ve used. Highly recommended!' }
-            ].map((testimonial, i) => (
-              <MagicCard key={i} className="glass-card border-white/5 hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 bg-black/40" particleCount={6} enableStars={true}>
-                <div className="p-6 relative z-10">
-                  <div className="flex text-yellow-500 mb-4">
-                    {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-4 h-4 fill-current" />)}
-                  </div>
-                  <p className="text-lg mb-6 text-foreground/90">"{testimonial.quote}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center font-bold text-white">
-                      {testimonial.name[0]}
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm">{testimonial.name}</p>
-                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </div>
-              </MagicCard>
-            ))}
-          </MagicGrid>
+          <div className="flex justify-center gap-6 [mask-image:linear-gradient(to_bottom,transparent,black_16%,black_84%,transparent)] max-h-[760px] overflow-hidden">
+            <TestimonialsColumn testimonials={firstColumn} duration={16} />
+            <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={20} />
+            <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={18} />
+          </div>
         </div>
       </section>
 

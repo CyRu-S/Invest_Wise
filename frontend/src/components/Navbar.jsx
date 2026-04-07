@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   CalendarDays,
   Database,
@@ -10,6 +11,8 @@ import {
   Users,
   Settings,
   LogOut,
+  Menu,
+  X,
 } from 'lucide-react';
 
 const navItems = {
@@ -37,6 +40,7 @@ export default function Navbar() {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -44,6 +48,21 @@ export default function Navbar() {
   };
 
   if (!isAuthenticated) return null;
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, []);
 
   const items = [
     ...navItems.common,
@@ -64,7 +83,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="tubelight-nav">
+        <div className="tubelight-nav navbar-desktop-nav">
           {items.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -102,7 +121,7 @@ export default function Navbar() {
           })}
         </div>
 
-        <div className="navbar-user">
+        <div className="navbar-user navbar-desktop-user">
           <span className="user-badge">{user?.role}</span>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             {user?.fullName}
@@ -112,7 +131,67 @@ export default function Navbar() {
             Logout
           </button>
         </div>
+
+        <div className="navbar-mobile-controls">
+          <span className="user-badge navbar-mobile-role">{user?.role}</span>
+          <button
+            type="button"
+            className="navbar-mobile-toggle"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </div>
+
+      <AnimatePresence>
+        {mobileMenuOpen ? (
+          <motion.div
+            className="navbar-mobile-panel"
+            initial={{ opacity: 0, y: -12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="navbar-mobile-panel__user">
+              <div className="navbar-mobile-panel__identity">
+                <span className="user-badge">{user?.role}</span>
+                <div>
+                  <p className="navbar-mobile-panel__name">{user?.fullName}</p>
+                  <p className="navbar-mobile-panel__label">Signed in workspace</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="navbar-mobile-panel__links">
+              {items.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`navbar-mobile-link${isActive ? ' active' : ''}`}
+                  >
+                    <span className="navbar-mobile-link__icon">
+                      <Icon size={17} strokeWidth={2.3} />
+                    </span>
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <button className="navbar-mobile-logout" onClick={handleLogout}>
+              <LogOut size={16} />
+              Logout
+            </button>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </nav>
   );
 }
