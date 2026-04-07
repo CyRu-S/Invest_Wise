@@ -52,16 +52,18 @@ function LandingButton({
 
 export default function LandingPage() {
   const institutionLogos = [
-    { name: 'SBI Funds', mark: 'SB', tag: 'Banking', gradient: 'from-blue-600 to-blue-400' },
-    { name: 'HDFC AMC', mark: 'HD', tag: 'Advisory', gradient: 'from-rose-600 to-red-400' },
-    { name: 'ICICI Pru', mark: 'IC', tag: 'Wealth', gradient: 'from-orange-600 to-amber-400' },
-    { name: 'Axis MF', mark: 'AX', tag: 'Research', gradient: 'from-fuchsia-600 to-pink-500' },
-    { name: 'Nippon India', mark: 'NI', tag: 'Capital', gradient: 'from-sky-600 to-cyan-400' },
-    { name: 'Kotak AMC', mark: 'KT', tag: 'Private', gradient: 'from-red-700 to-orange-500' },
-    { name: 'Groww', mark: 'GW', tag: 'Broker', gradient: 'from-emerald-600 to-teal-400' },
-    { name: 'Zerodha', mark: 'ZD', tag: 'Trading', gradient: 'from-blue-500 to-sky-300' },
-    { name: 'Angel One', mark: 'AO', tag: 'Digital', gradient: 'from-violet-600 to-purple-400' },
-    { name: 'Upstox', mark: 'UP', tag: 'Invest', gradient: 'from-indigo-600 to-blue-400' },
+    { name: 'SBI Funds', mark: 'SB', tag: 'Banking', gradient: 'from-blue-600 to-blue-400', image: 'https://www.google.com/s2/favicons?domain=sbimf.com&sz=128' },
+    { name: 'HDFC AMC', mark: 'HD', tag: 'Advisory', gradient: 'from-rose-600 to-red-400', image: 'https://www.google.com/s2/favicons?domain=hdfcfund.com&sz=128' },
+    { name: 'ICICI Pru', mark: 'IC', tag: 'Wealth', gradient: 'from-orange-600 to-amber-400', image: 'https://www.google.com/s2/favicons?domain=icicipruamc.com&sz=128' },
+    { name: 'Axis MF', mark: 'AX', tag: 'Research', gradient: 'from-fuchsia-600 to-pink-500', image: 'https://www.google.com/s2/favicons?domain=axismf.com&sz=128' },
+    { name: 'Nippon India', mark: 'NI', tag: 'Capital', gradient: 'from-sky-600 to-cyan-400', image: 'https://www.google.com/s2/favicons?domain=nipponindiamf.com&sz=128' },
+    { name: 'Kotak AMC', mark: 'KT', tag: 'Private', gradient: 'from-red-700 to-orange-500', image: 'https://www.google.com/s2/favicons?domain=kotakmf.com&sz=128' },
+    { name: 'Groww', mark: 'GW', tag: 'Broker', gradient: 'from-emerald-600 to-teal-400', image: 'https://www.google.com/s2/favicons?domain=groww.in&sz=128' },
+    { name: 'Zerodha', mark: 'ZD', tag: 'Trading', gradient: 'from-blue-500 to-sky-300', image: 'https://www.google.com/s2/favicons?domain=zerodha.com&sz=128' },
+    { name: 'Angel One', mark: 'AO', tag: 'Digital', gradient: 'from-violet-600 to-purple-400', image: 'https://www.google.com/s2/favicons?domain=angelone.in&sz=128' },
+    { name: 'Upstox', mark: 'UP', tag: 'Invest', gradient: 'from-indigo-600 to-blue-400', image: 'https://www.google.com/s2/favicons?domain=upstox.com&sz=128' },
+    { name: 'Motilal Oswal', mark: 'MO', tag: 'Advisory', gradient: 'from-yellow-600 to-orange-500', image: 'https://www.google.com/s2/favicons?domain=motilaloswalmf.com&sz=128' },
+    { name: 'Mirae Asset', mark: 'MA', tag: 'Global', gradient: 'from-cyan-600 to-blue-500', image: 'https://www.google.com/s2/favicons?domain=miraeassetmf.co.in&sz=128' },
   ];
 
   const investorTestimonials = [
