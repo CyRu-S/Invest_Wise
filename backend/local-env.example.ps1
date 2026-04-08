@@ -1,7 +1,8 @@
-$env:SPRING_PROFILES_ACTIVE = "mysql"
+$env:SPRING_PROFILES_ACTIVE = "render,mysql"
 $env:JWT_SECRET = "replace-with-a-long-random-secret-at-least-32-characters"
 
 # MySQL
+# Only needed when SPRING_PROFILES_ACTIVE includes "mysql".
 $env:MYSQL_HOST = "127.0.0.1"
 $env:MYSQL_PORT = "3306"
 $env:MYSQL_DB = "mutual_fund_db"
