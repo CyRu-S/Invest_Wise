@@ -1,8 +1,0 @@
-target/
-*.jar
-*.class
-.git
-.gitignore
-.idea/
-*.iml
-last_attempt.log
