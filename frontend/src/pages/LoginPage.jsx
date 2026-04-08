@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { getApiErrorMessage } from '../lib/apiErrors';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
 function GoogleSignInButton({ onSuccess, onError, loading }) {
@@ -25,14 +26,34 @@ function GoogleSignInButton({ onSuccess, onError, loading }) {
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [captchaCode, setCaptchaCode] = useState('');
+  const [captcha, setCaptcha] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [captchaLoading, setCaptchaLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const googleClientId =
     import.meta.env.VITE_GOOGLE_CLIENT_ID ||
     '75114719261-n2f50sgmafqju6739nuo0lggpne51b5a.apps.googleusercontent.com';
+
+  const fetchCaptcha = async () => {
+    setCaptchaLoading(true);
+    try {
+      const res = await api.get('/auth/captcha');
+      setCaptcha(res.data.data);
+      setCaptchaCode('');
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Could not load captcha'));
+    } finally {
+      setCaptchaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
 
   const handleGoogleSuccess = async (tokenResponse) => {
     const googleToken = tokenResponse?.access_token || tokenResponse?.credential;
@@ -53,7 +74,7 @@ export default function LoginPage() {
       if (!err.response) {
         setError('Could not reach the server. Check the Render CORS origin and Google env setup.');
       } else {
-        setError(err.response?.data?.message || 'Google sign-in failed');
+        setError(getApiErrorMessage(err, 'Google sign-in failed'));
       }
     } finally {
       setGoogleLoading(false);
@@ -65,11 +86,17 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/auth/login', {
+        email,
+        password,
+        captchaId: captcha?.captchaId,
+        captchaCode,
+      });
       login(res.data);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(getApiErrorMessage(err, 'Login failed'));
+      fetchCaptcha();
     } finally {
       setLoading(false);
     }
@@ -87,8 +114,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex w-full flex-col min-h-screen items-center justify-center overflow-hidden" style={{ background: '#0a0e1a' }} id="login-page">
-      {/* Animated dot matrix background */}
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 py-10 sm:justify-center sm:px-6 sm:py-14" style={{ background: '#0a0e1a' }} id="login-page">
       <div className="absolute inset-0 z-0">
         <CanvasRevealEffect
           animationSpeed={3}
@@ -104,22 +130,19 @@ export default function LoginPage() {
         <div className="absolute top-0 left-0 right-0 h-1/3" style={{ background: 'linear-gradient(to bottom, #0a0e1a, transparent)' }} />
       </div>
 
-      {/* Form content */}
-      <div className="relative z-10 w-full max-w-sm mx-auto px-4">
+      <div className="relative z-10 mx-auto w-full max-w-sm">
         <div className="space-y-6 text-center">
-          {/* Heading */}
           <div className="space-y-1">
             <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Welcome Back</h1>
-            <p className="text-[1.25rem] text-white/50 font-light">Sign in to InvestWise</p>
+            <p className="text-[1.25rem] font-light text-white/50">Sign in to InvestWise</p>
           </div>
 
           {error && (
-            <div className="rounded-full py-2 px-4 border border-red-500/30 bg-red-500/10 text-red-300 text-sm">
+            <div className="rounded-3xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300">
               {error}
             </div>
           )}
 
-          {/* Google Sign-in Button */}
           <div className="space-y-2">
             <GoogleOAuthProvider clientId={googleClientId}>
               <GoogleSignInButton
@@ -133,67 +156,97 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Divider */}
           <div className="flex items-center gap-4">
-            <div className="h-px bg-white/10 flex-1" />
-            <span className="text-white/40 text-sm">or</span>
-            <div className="h-px bg-white/10 flex-1" />
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-sm text-white/40">or</span>
+            <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative">
-              <input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full backdrop-blur-[1px] text-white border border-white/10 rounded-full py-3 px-5 focus:outline-none focus:border-white/30 bg-transparent text-center placeholder:text-white/30"
-              />
-            </div>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full rounded-full border border-white/10 bg-transparent px-5 py-3 text-center text-white backdrop-blur-[1px] placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+            />
 
-            <div className="relative">
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full rounded-full border border-white/10 bg-transparent px-5 py-3 text-center text-white backdrop-blur-[1px] placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+            />
+            <p className="text-center text-xs text-white/45">Passwords are case-sensitive.</p>
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px]">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm text-white/70">Security check</span>
+                <button
+                  type="button"
+                  onClick={fetchCaptcha}
+                  className="text-xs text-white/60 underline transition-colors hover:text-white"
+                >
+                  Refresh
+                </button>
+              </div>
+
+              <div className="mb-3 overflow-hidden rounded-2xl border border-white/10 bg-[#111827]">
+                {captchaLoading ? (
+                  <div className="flex h-[60px] items-center justify-center text-sm text-white/50">Loading captcha...</div>
+                ) : (
+                  captcha?.imageData && <img src={captcha.imageData} alt="Captcha" className="h-[60px] w-full object-cover" />
+                )}
+              </div>
+
               <input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                id="captcha"
+                type="text"
+                placeholder="Type the characters above"
+                value={captchaCode}
+                onChange={(e) => setCaptchaCode(e.target.value.toUpperCase())}
                 required
-                className="w-full backdrop-blur-[1px] text-white border border-white/10 rounded-full py-3 px-5 focus:outline-none focus:border-white/30 bg-transparent text-center placeholder:text-white/30"
+                className="w-full rounded-full border border-white/10 bg-transparent px-5 py-3 text-center text-white uppercase placeholder:text-white/30 focus:border-white/30 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || captchaLoading || !captcha?.captchaId}
+              className="w-full rounded-full bg-white py-3 font-medium text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Demo accounts divider */}
+          <p className="text-sm text-white/40">
+            Forgot your password?{' '}
+            <Link to="/forgot-password" className="text-white/60 underline transition-colors hover:text-white/80">
+              Reset it here
+            </Link>
+          </p>
+
           <div className="flex items-center gap-4">
-            <div className="h-px bg-white/10 flex-1" />
-            <span className="text-white/40 text-sm">or try a demo account</span>
-            <div className="h-px bg-white/10 flex-1" />
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-sm text-white/40">or try a demo account</span>
+            <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          {/* Demo buttons */}
           <div className="grid grid-cols-2 gap-2">
-            <button className="backdrop-blur-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 rounded-full py-2 px-3 text-sm transition-colors" onClick={() => fillDemo('investor')}>👤 Investor</button>
-            <button className="backdrop-blur-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 rounded-full py-2 px-3 text-sm transition-colors" onClick={() => fillDemo('advisor')}>🎓 Advisor</button>
-            <button className="backdrop-blur-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 rounded-full py-2 px-3 text-sm transition-colors" onClick={() => fillDemo('analyst')}>📊 Analyst</button>
-            <button className="backdrop-blur-[2px] bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/10 rounded-full py-2 px-3 text-sm transition-colors" onClick={() => fillDemo('admin')}>⚙️ Admin</button>
+            <button type="button" className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white" onClick={() => fillDemo('investor')}>Investor</button>
+            <button type="button" className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white" onClick={() => fillDemo('advisor')}>Advisor</button>
+            <button type="button" className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white" onClick={() => fillDemo('analyst')}>Analyst</button>
+            <button type="button" className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white" onClick={() => fillDemo('admin')}>Admin</button>
           </div>
 
-          {/* Register link */}
-          <p className="text-sm text-white/40 pt-4">
+          <p className="pt-4 text-sm text-white/40">
             Don&apos;t have an account?{' '}
-            <Link to="/register" className="underline text-white/60 hover:text-white/80 transition-colors">
+            <Link to="/register" className="text-white/60 underline transition-colors hover:text-white/80">
               Register here
             </Link>
           </p>

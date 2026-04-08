@@ -7,6 +7,7 @@ import WebsiteLoader from './components/WebsiteLoader';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import Dashboard from './pages/Dashboard';
 import FundExplorer from './pages/FundExplorer';
 import FundDetail from './pages/FundDetail';
@@ -30,8 +31,8 @@ function ProtectedRoute({ children, roles }) {
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
-  const isAuthPage = ['/login', '/register'].includes(location.pathname);
-  const useDoodleBackground = !['/', '/login', '/register'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
+  const useDoodleBackground = !['/', '/login', '/register', '/forgot-password'].includes(location.pathname);
 
   useEffect(() => {
     document.body.classList.toggle('app-body--doodles', useDoodleBackground);
@@ -51,6 +52,7 @@ function AppRoutes() {
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage />} />
+        <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/dashboard" /> : <ForgotPasswordPage />} />
 
         {/* Protected */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
