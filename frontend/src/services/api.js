@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+const explicitApiUrl = import.meta.env.VITE_API_URL?.trim();
+const productionApiUrl = 'https://invest-wise-backend.onrender.com/api';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api',
+    baseURL: explicitApiUrl || (import.meta.env.PROD ? productionApiUrl : '/api'),
     headers: { 'Content-Type': 'application/json' }
 });
 

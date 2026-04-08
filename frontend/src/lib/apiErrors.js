@@ -1,4 +1,8 @@
 export function getApiErrorMessage(error, fallback) {
+  if (!error?.response) {
+    return fallback;
+  }
+
   const payload = error?.response?.data;
 
   if (typeof payload?.message === 'string' && payload.message.trim()) {

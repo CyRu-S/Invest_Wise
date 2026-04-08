@@ -39,13 +39,19 @@ export default function LoginPage() {
     '75114719261-n2f50sgmafqju6739nuo0lggpne51b5a.apps.googleusercontent.com';
 
   const fetchCaptcha = async () => {
+    setError('');
     setCaptchaLoading(true);
     try {
       const res = await api.get('/auth/captcha');
-      setCaptcha(res.data.data);
+      const challenge = res?.data?.data;
+      if (!challenge?.captchaId || !challenge?.imageData) {
+        throw new Error('Malformed captcha response');
+      }
+      setCaptcha(challenge);
       setCaptchaCode('');
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Could not load captcha'));
+      setCaptcha(null);
+      setError(getApiErrorMessage(err, 'Could not load captcha. Check that the backend URL is reachable.'));
     } finally {
       setCaptchaLoading(false);
     }
