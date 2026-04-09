@@ -793,14 +793,60 @@ export default function AnalystDataManagement() {
               ))}
             </tbody>
           </table>
-
-          {!filteredFunds.length ? (
-            <div className="analyst-data-empty analyst-data-empty--table">
-              <Search size={18} />
-              <p>No funds match the current search and category filter.</p>
-            </div>
-          ) : null}
         </div>
+
+        {filteredFunds.length ? (
+          <div className="analyst-data-mobile-list">
+            {filteredFunds.map((fund) => (
+              <article
+                key={`mobile-${fund.id}`}
+                className={`analyst-data-mobile-card ${fund.id === selectedId ? 'is-selected' : ''}`}
+              >
+                <div className="analyst-data-mobile-card__top">
+                  <div className="analyst-data-table__fund">
+                    <strong>{fund.fundName}</strong>
+                    <span>{fund.tickerSymbol}</span>
+                  </div>
+                  <span className="analyst-data-pill analyst-data-pill--update">{fund.category}</span>
+                </div>
+
+                <div className="analyst-data-mobile-card__grid">
+                  <div className="analyst-data-mobile-card__metric">
+                    <span>Risk</span>
+                    <strong>{fund.riskRating}/5</strong>
+                  </div>
+                  <div className="analyst-data-mobile-card__metric">
+                    <span>NAV</span>
+                    <strong>{formatDecimal(fund.currentNav, 4)}</strong>
+                  </div>
+                  <div className="analyst-data-mobile-card__metric">
+                    <span>Expense</span>
+                    <strong>{formatDecimal(fund.expenseRatio)}%</strong>
+                  </div>
+                  <div className="analyst-data-mobile-card__metric">
+                    <span>Minimum</span>
+                    <strong>{formatCurrency(fund.minInvestment)}</strong>
+                  </div>
+                </div>
+
+                <div className="analyst-data-mobile-card__actions">
+                  <button
+                    type="button"
+                    className="analyst-data-table__action"
+                    onClick={() => handleSelectFund(fund)}
+                  >
+                    Edit fund
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="analyst-data-empty analyst-data-empty--table">
+            <Search size={18} />
+            <p>No funds match the current search and category filter.</p>
+          </div>
+        )}
 
         {selectedFund ? (
           <div className="analyst-data-selected-bar">

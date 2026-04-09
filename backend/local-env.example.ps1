@@ -18,6 +18,11 @@ $env:MAIL_PASSWORD = "your_gmail_app_password"
 $env:MAIL_FROM = "your_email@gmail.com"
 $env:MAIL_SMTP_AUTH = "true"
 $env:MAIL_SMTP_STARTTLS = "true"
+$env:MAIL_SMTP_STARTTLS_REQUIRED = "true"
+$env:MAIL_SMTP_CONNECTION_TIMEOUT = "10000"
+$env:MAIL_SMTP_TIMEOUT = "10000"
+$env:MAIL_SMTP_WRITE_TIMEOUT = "10000"
+# Gmail works best when MAIL_FROM matches MAIL_USERNAME.
 
 # Optional extras
 # $env:GOOGLE_CLIENT_ID = "your-google-client-id.apps.googleusercontent.com"

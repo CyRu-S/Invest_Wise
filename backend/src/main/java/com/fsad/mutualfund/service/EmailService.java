@@ -1,12 +1,17 @@
 package com.fsad.mutualfund.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
     private final boolean mailEnabled;
@@ -40,7 +45,7 @@ public class EmailService {
 
     private void sendEmail(String email, String subject, String body, String code, String purpose) {
         if (!mailEnabled) {
-            System.out.printf("[MAIL DISABLED] %s code for %s: %s%n", purpose, email, code);
+            log.info("[MAIL DISABLED] {} code for {}: {}", purpose, email, code);
             return;
         }
 
@@ -49,6 +54,13 @@ public class EmailService {
         message.setFrom(fromAddress);
         message.setSubject(subject);
         message.setText(body);
-        mailSender.send(message);
+
+        try {
+            mailSender.send(message);
+            log.info("Sent {} email to {}", purpose, email);
+        } catch (MailException ex) {
+            log.error("Failed to send {} email to {} using from address {}", purpose, email, fromAddress, ex);
+            throw new RuntimeException("Unable to send verification email right now. Please try again in a moment.", ex);
+        }
     }
 }
