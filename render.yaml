@@ -8,7 +8,7 @@ services:
     plan: free
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: render
+        value: render,mysql
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
