@@ -1,3 +1,85 @@
+:root {
+  --dashboard-panel-border: rgba(148, 163, 184, 0.12);
+  --dashboard-panel-bg:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
+  --dashboard-panel-shadow:
+    0 30px 90px rgba(5, 10, 24, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --dashboard-summary-shell: rgba(10, 14, 25, 0.94);
+  --dashboard-summary-surface: rgba(4, 8, 19, 0.76);
+  --dashboard-kicker: #c7d2fe;
+  --dashboard-chip-bg: rgba(255, 255, 255, 0.05);
+  --dashboard-chip-border: rgba(148, 163, 184, 0.14);
+  --dashboard-badge-bg: rgba(99, 102, 241, 0.16);
+  --dashboard-badge-text: #c7d2fe;
+  --dashboard-arrow-bg: rgba(255, 255, 255, 0.04);
+  --dashboard-arrow-border: rgba(148, 163, 184, 0.12);
+  --dashboard-icon-bg: rgba(99, 102, 241, 0.12);
+  --dashboard-icon-text: #c7d2fe;
+  --dashboard-metric-border: rgba(148, 163, 184, 0.12);
+  --dashboard-metric-bg: rgba(255, 255, 255, 0.04);
+  --dashboard-inline-bg: rgba(255, 255, 255, 0.04);
+  --dashboard-inline-border: rgba(148, 163, 184, 0.14);
+  --dashboard-chart-bg:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(9, 12, 24, 0.92)),
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 54%);
+  --dashboard-chart-border: rgba(148, 163, 184, 0.12);
+  --dashboard-empty-bg: rgba(255, 255, 255, 0.03);
+  --dashboard-empty-border: rgba(148, 163, 184, 0.18);
+  --dashboard-insight-bg: rgba(255, 255, 255, 0.04);
+  --dashboard-insight-border: rgba(148, 163, 184, 0.12);
+  --dashboard-insight-icon: #a5b4fc;
+  --dashboard-ring-track: rgba(99, 102, 241, 0.12);
+  --dashboard-ring-text: #f8fafc;
+  --dashboard-chart-axis: #94a3b8;
+  --dashboard-chart-label: #cbd5e1;
+  --dashboard-tooltip-bg: rgba(15, 23, 42, 0.94);
+  --dashboard-tooltip-border: rgba(148, 163, 184, 0.16);
+  --dashboard-tooltip-text: #f8fafc;
+}
+
+:root[data-theme='light'] {
+  --dashboard-panel-border: rgba(148, 163, 184, 0.18);
+  --dashboard-panel-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.98)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 45%);
+  --dashboard-panel-shadow:
+    0 20px 54px rgba(148, 163, 184, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --dashboard-summary-shell: rgba(226, 232, 240, 0.9);
+  --dashboard-summary-surface: rgba(255, 255, 255, 0.92);
+  --dashboard-kicker: #4338ca;
+  --dashboard-chip-bg: rgba(255, 255, 255, 0.82);
+  --dashboard-chip-border: rgba(148, 163, 184, 0.2);
+  --dashboard-badge-bg: rgba(99, 102, 241, 0.12);
+  --dashboard-badge-text: #4338ca;
+  --dashboard-arrow-bg: rgba(255, 255, 255, 0.82);
+  --dashboard-arrow-border: rgba(148, 163, 184, 0.18);
+  --dashboard-icon-bg: rgba(99, 102, 241, 0.12);
+  --dashboard-icon-text: #4338ca;
+  --dashboard-metric-border: rgba(148, 163, 184, 0.18);
+  --dashboard-metric-bg: rgba(255, 255, 255, 0.8);
+  --dashboard-inline-bg: rgba(255, 255, 255, 0.86);
+  --dashboard-inline-border: rgba(148, 163, 184, 0.2);
+  --dashboard-chart-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 245, 249, 0.96)),
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.14), transparent 56%);
+  --dashboard-chart-border: rgba(148, 163, 184, 0.16);
+  --dashboard-empty-bg: rgba(255, 255, 255, 0.72);
+  --dashboard-empty-border: rgba(148, 163, 184, 0.22);
+  --dashboard-insight-bg: rgba(255, 255, 255, 0.82);
+  --dashboard-insight-border: rgba(148, 163, 184, 0.18);
+  --dashboard-insight-icon: #4338ca;
+  --dashboard-ring-track: rgba(99, 102, 241, 0.18);
+  --dashboard-ring-text: #0f172a;
+  --dashboard-chart-axis: #64748b;
+  --dashboard-chart-label: #475569;
+  --dashboard-tooltip-bg: rgba(255, 255, 255, 0.96);
+  --dashboard-tooltip-border: rgba(148, 163, 184, 0.2);
+  --dashboard-tooltip-text: #0f172a;
+}
+
 .dashboard-shell {
   position: relative;
   overflow: hidden;
@@ -17,14 +99,10 @@
 .dashboard-hero__summary {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--dashboard-panel-border);
   border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
-    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
-  box-shadow:
-    0 30px 90px rgba(5, 10, 24, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--dashboard-panel-bg);
+  box-shadow: var(--dashboard-panel-shadow);
 }
 
 .dashboard-hero__copy {
@@ -36,7 +114,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: #c7d2fe;
+  color: var(--dashboard-kicker);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -74,14 +152,14 @@
 }
 
 .dashboard-hero__chip {
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--dashboard-chip-border);
+  background: var(--dashboard-chip-bg);
   color: var(--text-primary);
 }
 
 .dashboard-bento__badge {
-  background: rgba(99, 102, 241, 0.16);
-  color: #c7d2fe;
+  background: var(--dashboard-badge-bg);
+  color: var(--dashboard-badge-text);
 }
 
 .dashboard-hero__summary {
@@ -89,7 +167,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   padding: 1px;
-  background: rgba(10, 14, 25, 0.94);
+  background: var(--dashboard-summary-shell);
 }
 
 .dashboard-hero__stat {
@@ -98,31 +176,31 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 1.35rem;
-  background: rgba(4, 8, 19, 0.76);
+  background: var(--dashboard-summary-surface);
 }
 
 .dashboard-hero__stat--indigo {
   background:
     radial-gradient(circle at top right, rgba(99, 102, 241, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--dashboard-summary-surface);
 }
 
 .dashboard-hero__stat--violet {
   background:
     radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--dashboard-summary-surface);
 }
 
 .dashboard-hero__stat--emerald {
   background:
     radial-gradient(circle at top right, rgba(16, 185, 129, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--dashboard-summary-surface);
 }
 
 .dashboard-hero__stat--amber {
   background:
     radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--dashboard-summary-surface);
 }
 
 .dashboard-hero__stat-label,
@@ -208,8 +286,8 @@
   width: 2.2rem;
   height: 2.2rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dashboard-arrow-border);
+  background: var(--dashboard-arrow-bg);
 }
 
 .dashboard-bento__icon {
@@ -219,8 +297,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 18px;
-  background: rgba(99, 102, 241, 0.12);
-  color: #c7d2fe;
+  background: var(--dashboard-icon-bg);
+  color: var(--dashboard-icon-text);
 }
 
 .dashboard-bento__body {
@@ -255,9 +333,9 @@
 
 .dashboard-metric-tile,
 .dashboard-bento__mini-stat {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--dashboard-metric-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--dashboard-metric-bg);
   padding: 0.95rem 1rem;
 }
 
@@ -291,8 +369,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dashboard-inline-border);
+  background: var(--dashboard-inline-bg);
   padding: 0.7rem 1rem;
   color: var(--text-primary);
   transition: all var(--transition-base);
@@ -300,7 +378,7 @@
 
 .dashboard-inline-link:hover {
   border-color: rgba(129, 140, 248, 0.28);
-  color: #ffffff;
+  color: var(--text-accent);
 }
 
 .dashboard-risk-panel {
@@ -352,11 +430,9 @@
 .dashboard-chart-shell {
   margin-top: auto;
   min-height: 320px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--dashboard-chart-border);
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(9, 12, 24, 0.92)),
-    radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 54%);
+  background: var(--dashboard-chart-bg);
   padding: 1rem 0.75rem 0.5rem;
 }
 
@@ -365,9 +441,9 @@
   min-height: 260px;
   align-items: center;
   justify-content: center;
-  border: 1px dashed rgba(148, 163, 184, 0.18);
+  border: 1px dashed var(--dashboard-empty-border);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--dashboard-empty-bg);
   padding: 1.25rem;
   text-align: center;
 }
@@ -389,15 +465,15 @@
   grid-template-columns: auto 1fr;
   gap: 0.75rem;
   align-items: flex-start;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--dashboard-insight-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--dashboard-insight-bg);
   padding: 0.95rem 1rem;
 }
 
 .dashboard-insight-item svg {
   margin-top: 0.15rem;
-  color: #a5b4fc;
+  color: var(--dashboard-insight-icon);
 }
 
 .dashboard-insight-item p {

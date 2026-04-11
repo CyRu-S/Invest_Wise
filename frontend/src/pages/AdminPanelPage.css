@@ -1,8 +1,33 @@
 .admin-panel-page {
+  --admin-panel-border: rgba(148, 163, 184, 0.12);
+  --admin-panel-bg:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
+  --admin-panel-shadow:
+    0 30px 90px rgba(5, 10, 24, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --admin-panel-stat-bg: rgba(4, 8, 19, 0.76);
+  --admin-panel-soft-card-bg: rgba(255, 255, 255, 0.04);
+  --admin-panel-field-bg: rgba(10, 14, 25, 0.84);
+  --admin-panel-table-bg: rgba(6, 10, 24, 0.5);
   position: relative;
   overflow: hidden;
   padding-top: 2.5rem;
   padding-bottom: 4rem;
+}
+
+:root[data-theme='light'] .admin-panel-page {
+  --admin-panel-border: rgba(148, 163, 184, 0.2);
+  --admin-panel-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 245, 249, 0.98)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 50%);
+  --admin-panel-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --admin-panel-stat-bg: rgba(255, 255, 255, 0.88);
+  --admin-panel-soft-card-bg: rgba(255, 255, 255, 0.74);
+  --admin-panel-field-bg: rgba(255, 255, 255, 0.88);
+  --admin-panel-table-bg: rgba(255, 255, 255, 0.8);
 }
 
 .admin-panel-page__aurora {
@@ -45,14 +70,10 @@
 .admin-panel-workspace {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
-    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
-  box-shadow:
-    0 30px 90px rgba(5, 10, 24, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--admin-panel-bg);
+  box-shadow: var(--admin-panel-shadow);
 }
 
 .admin-panel-hero__copy,
@@ -120,7 +141,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 1.25rem;
-  background: rgba(4, 8, 19, 0.76);
+  background: var(--admin-panel-stat-bg);
 }
 
 .admin-panel-hero__stat span,
@@ -142,25 +163,25 @@
 .admin-panel-hero__stat--indigo {
   background:
     radial-gradient(circle at top right, rgba(99, 102, 241, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--admin-panel-stat-bg);
 }
 
 .admin-panel-hero__stat--violet {
   background:
     radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--admin-panel-stat-bg);
 }
 
 .admin-panel-hero__stat--emerald {
   background:
     radial-gradient(circle at top right, rgba(16, 185, 129, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--admin-panel-stat-bg);
 }
 
 .admin-panel-hero__stat--amber {
   background:
     radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--admin-panel-stat-bg);
 }
 
 .admin-panel-loading {
@@ -190,9 +211,9 @@
 }
 
 .admin-panel-metric {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--admin-panel-soft-card-bg);
   padding: 1rem;
 }
 
@@ -229,14 +250,10 @@
 .admin-panel-audit {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
-    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
-  box-shadow:
-    0 30px 90px rgba(5, 10, 24, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--admin-panel-bg);
+  box-shadow: var(--admin-panel-shadow);
   padding: 2rem;
 }
 
@@ -315,11 +332,11 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 24px;
-  background: rgba(10, 14, 25, 0.84);
+  background: var(--admin-panel-field-bg);
   padding: 0.95rem 1rem;
-  box-shadow: 0 18px 60px rgba(5, 10, 24, 0.4);
+  box-shadow: 0 18px 60px rgba(5, 10, 24, 0.2);
 }
 
 .admin-panel-field svg {
@@ -359,9 +376,9 @@
 
 .admin-panel-table-shell {
   overflow: auto;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 28px;
-  background: rgba(6, 10, 24, 0.5);
+  background: var(--admin-panel-table-bg);
 }
 
 .admin-panel-table {
@@ -504,9 +521,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--admin-panel-soft-card-bg);
   padding: 0.55rem 0.8rem;
 }
 
@@ -575,9 +592,9 @@
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) auto;
   gap: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--admin-panel-soft-card-bg);
   padding: 1rem;
 }
 
@@ -607,9 +624,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.7rem;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--admin-panel-border);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--admin-panel-soft-card-bg);
   padding: 2rem;
   text-align: center;
 }

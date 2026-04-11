@@ -12,8 +12,8 @@
 /* --- Landing page component classes in components layer --- */
 @layer components {
   .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
     backdrop-filter: blur(12px);
   }
 
@@ -328,9 +328,35 @@ footer {
 .footer-magic-card {
   border-radius: var(--radius-xl) !important;
   padding: 2rem !important;
+  border: 1px solid var(--border-glass) !important;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(9, 12, 24, 0.96)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.1), transparent 46%) !important;
+  box-shadow:
+    0 24px 60px rgba(5, 10, 24, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+:root[data-theme='light'] .footer-magic-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.98)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 52%) !important;
+  box-shadow:
+    0 22px 50px rgba(148, 163, 184, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+.footer-brand__marking {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
 }
 
 :root {
+  --color-foreground: #e2e8f0;
+  --color-background: #0a0e1a;
+  --color-secondary: #1e293b;
+  --color-muted-foreground: #94a3b8;
   /* Color Palette — Dark Mode */
   --bg-primary: #0a0e1a;
   --bg-secondary: #111827;
@@ -383,6 +409,92 @@ footer {
   --transition-slow: 400ms ease;
 }
 
+:root {
+  --nav-surface: rgba(10, 14, 26, 0.95);
+  --nav-fade: rgba(10, 14, 26, 0.85);
+  --nav-fade-soft: rgba(10, 14, 26, 0.4);
+  --nav-pill-bg: rgba(255, 255, 255, 0.04);
+  --nav-pill-border: rgba(255, 255, 255, 0.08);
+  --nav-toggle-bg: rgba(255, 255, 255, 0.04);
+  --nav-toggle-shadow: 0 12px 30px rgba(5, 10, 24, 0.22);
+  --nav-mobile-link-bg: rgba(255, 255, 255, 0.02);
+  --nav-mobile-link-border: rgba(255, 255, 255, 0.06);
+  --nav-mobile-panel-border: rgba(255, 255, 255, 0.08);
+  --theme-toggle-track: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.94) 100%);
+  --theme-toggle-track-border: rgba(148, 163, 184, 0.24);
+  --theme-toggle-thumb: linear-gradient(135deg, #818cf8 0%, #60a5fa 100%);
+  --theme-toggle-thumb-shadow: 0 12px 24px rgba(37, 99, 235, 0.28);
+  --theme-toggle-icon: #94a3b8;
+  --theme-toggle-active-icon: #f8fafc;
+  --select-color-scheme: dark;
+  --select-option-bg: #0b1222;
+  --select-option-text: #eef2ff;
+  --app-doodle-overlay:
+    radial-gradient(circle at top left, rgba(99, 102, 241, 0.2), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(52, 211, 153, 0.14), transparent 32%),
+    radial-gradient(circle at 50% 20%, rgba(129, 140, 248, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(10, 14, 26, 0.97), rgba(8, 12, 24, 0.98));
+  --app-doodle-pattern:
+    linear-gradient(180deg, rgba(6, 10, 20, 0.1), rgba(6, 10, 20, 0.22)),
+    url('/background.svg');
+  --app-doodle-pattern-opacity: 0.3;
+  --app-doodle-blend: screen;
+}
+
+:root[data-theme='light'] {
+  --color-foreground: #0f172a;
+  --color-background: #f8fafc;
+  --color-secondary: #e2e8f0;
+  --color-muted-foreground: #475569;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-glass: rgba(255, 255, 255, 0.72);
+  --bg-glass-hover: rgba(255, 255, 255, 0.92);
+  --border-glass: rgba(15, 23, 42, 0.1);
+  --border-glass-hover: rgba(15, 23, 42, 0.18);
+  --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+  --gradient-card: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-accent: #4338ca;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 14px 30px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 0 18px rgba(99, 102, 241, 0.1);
+  --shadow-glow-success: 0 0 18px rgba(16, 185, 129, 0.12);
+  --nav-surface: rgba(248, 250, 252, 0.9);
+  --nav-fade: rgba(248, 250, 252, 0.88);
+  --nav-fade-soft: rgba(248, 250, 252, 0.45);
+  --nav-pill-bg: rgba(15, 23, 42, 0.04);
+  --nav-pill-border: rgba(15, 23, 42, 0.08);
+  --nav-toggle-bg: rgba(255, 255, 255, 0.78);
+  --nav-toggle-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
+  --nav-mobile-link-bg: rgba(255, 255, 255, 0.8);
+  --nav-mobile-link-border: rgba(15, 23, 42, 0.08);
+  --nav-mobile-panel-border: rgba(15, 23, 42, 0.08);
+  --theme-toggle-track: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(226, 232, 240, 0.96) 100%);
+  --theme-toggle-track-border: rgba(15, 23, 42, 0.12);
+  --theme-toggle-thumb: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --theme-toggle-thumb-shadow: 0 12px 24px rgba(245, 158, 11, 0.24);
+  --theme-toggle-icon: #64748b;
+  --theme-toggle-active-icon: #fff7ed;
+  --select-color-scheme: light;
+  --select-option-bg: #ffffff;
+  --select-option-text: #0f172a;
+  --app-doodle-overlay:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 32%),
+    radial-gradient(circle at 50% 20%, rgba(129, 140, 248, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
+  --app-doodle-pattern:
+    linear-gradient(180deg, rgba(148, 163, 184, 0.06), rgba(148, 163, 184, 0.12)),
+    url('/background.svg');
+  --app-doodle-pattern-opacity: 0.16;
+  --app-doodle-blend: multiply;
+}
+
 /* ================================================
    Reset & Base — in @layer base so Tailwind utilities override
    ================================================ */
@@ -398,6 +510,32 @@ footer {
 
   html {
     scroll-behavior: smooth;
+  }
+
+  html,
+  body,
+  #root,
+  .app-shell,
+  .navbar,
+  .site-footer,
+  .glass-card,
+  .btn,
+  .form-control,
+  .tubelight-nav,
+  .tubelight-tab,
+  .navbar-mobile-toggle,
+  .navbar-mobile-link,
+  .navbar-mobile-panel,
+  .theme-toggle,
+  .theme-toggle__track,
+  .theme-toggle__thumb {
+    transition:
+      background-color var(--transition-slow),
+      background var(--transition-slow),
+      color var(--transition-base),
+      border-color var(--transition-base),
+      box-shadow var(--transition-slow),
+      transform var(--transition-base);
   }
 
   body {
@@ -443,13 +581,13 @@ footer {
   }
 
   select {
-    color-scheme: dark;
+    color-scheme: var(--select-color-scheme);
   }
 
   select option,
   select optgroup {
-    background: #0b1222;
-    color: #eef2ff;
+    background: var(--select-option-bg);
+    color: var(--select-option-text);
   }
 
   select option:checked,
@@ -487,11 +625,7 @@ footer {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background:
-      radial-gradient(circle at top left, rgba(99, 102, 241, 0.2), transparent 34%),
-      radial-gradient(circle at bottom right, rgba(52, 211, 153, 0.14), transparent 32%),
-      radial-gradient(circle at 50% 20%, rgba(129, 140, 248, 0.08), transparent 28%),
-      linear-gradient(180deg, rgba(10, 14, 26, 0.97), rgba(8, 12, 24, 0.98));
+    background: var(--app-doodle-overlay);
     background-repeat: no-repeat;
     background-size: 46rem 46rem, 40rem 40rem, 36rem 36rem, cover;
     background-position: -8rem -10rem, calc(100% + 3rem) calc(100% + 2rem), center top, center;
@@ -504,14 +638,12 @@ footer {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background:
-      linear-gradient(180deg, rgba(6, 10, 20, 0.1), rgba(6, 10, 20, 0.22)),
-      url('/background.svg');
+    background: var(--app-doodle-pattern);
     background-repeat: no-repeat, repeat;
     background-size: cover, 920px 920px;
     background-position: center, center top;
-    opacity: 0.3;
-    mix-blend-mode: screen;
+    opacity: var(--app-doodle-pattern-opacity);
+    mix-blend-mode: var(--app-doodle-blend);
   }
 
   .app-shell--doodles > * {
@@ -686,7 +818,7 @@ footer {
    Navigation Bar — Tubelight Effect
    ================================================ */
   .navbar {
-    background: rgba(10, 14, 26, 0.95);
+    background: var(--nav-surface);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -700,7 +832,7 @@ footer {
     left: 0;
     right: 0;
     height: 20px;
-    background: linear-gradient(to bottom, rgba(10, 14, 26, 0.85), rgba(10, 14, 26, 0.4), transparent);
+    background: linear-gradient(to bottom, var(--nav-fade), var(--nav-fade-soft), transparent);
     pointer-events: none;
     z-index: 99;
   }
@@ -726,8 +858,8 @@ footer {
     display: flex;
     align-items: center;
     gap: 2px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--nav-pill-bg);
+    border: 1px solid var(--nav-pill-border);
     border-radius: 999px;
     padding: 4px;
   }
@@ -756,7 +888,7 @@ footer {
   }
 
   .navbar-brand__word {
-    color: #e6ecff;
+    color: var(--text-primary);
   }
 
   .navbar-brand__word--accent {
@@ -862,26 +994,26 @@ footer {
   .navbar-mobile-controls {
     display: none;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.55rem;
     flex-shrink: 0;
   }
 
   .navbar-mobile-role {
-    padding-inline: 0.6rem;
-    font-size: 0.66rem;
+    padding-inline: 0.5rem;
+    font-size: 0.62rem;
   }
 
   .navbar-mobile-toggle {
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-glass);
+    background: var(--nav-toggle-bg);
     color: var(--text-primary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 30px rgba(5, 10, 24, 0.22);
+    box-shadow: var(--nav-toggle-shadow);
   }
 
   .navbar-mobile-panel {
@@ -890,7 +1022,7 @@ footer {
 
   .navbar-mobile-panel__user {
     padding-bottom: 0.85rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--nav-mobile-panel-border);
   }
 
   .navbar-mobile-panel__identity {
@@ -928,8 +1060,8 @@ footer {
     border-radius: 18px;
     color: var(--text-secondary);
     text-decoration: none;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--nav-mobile-link-bg);
+    border: 1px solid var(--nav-mobile-link-border);
     transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base), transform var(--transition-base);
   }
 
@@ -978,6 +1110,85 @@ footer {
     font-weight: 600;
     color: white;
     letter-spacing: 0.05em;
+  }
+
+  .theme-toggle {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .theme-toggle:focus-visible {
+    outline: none;
+  }
+
+  .theme-toggle__track {
+    width: 4.25rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.55rem;
+    background: var(--theme-toggle-track);
+    border: 1px solid var(--theme-toggle-track-border);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px rgba(15, 23, 42, 0.12);
+    isolation: isolate;
+  }
+
+  .theme-toggle__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-toggle-icon);
+    z-index: 1;
+  }
+
+  .theme-toggle__thumb {
+    position: absolute;
+    top: 0.18rem;
+    left: 0.2rem;
+    width: 1.95rem;
+    height: 1.95rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-toggle-active-icon);
+    background: var(--theme-toggle-thumb);
+    box-shadow: var(--theme-toggle-thumb-shadow);
+    transform: translateX(0);
+  }
+
+  .theme-toggle.is-light .theme-toggle__thumb {
+    transform: translateX(1.86rem);
+  }
+
+  .theme-toggle:focus-visible .theme-toggle__track {
+    box-shadow:
+      0 0 0 4px rgba(99, 102, 241, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 10px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  .theme-toggle--compact .theme-toggle__track {
+    width: 3.7rem;
+    height: 2.2rem;
+  }
+
+  .theme-toggle--compact .theme-toggle__thumb {
+    width: 1.72rem;
+    height: 1.72rem;
+  }
+
+  .theme-toggle--compact.is-light .theme-toggle__thumb {
+    transform: translateX(1.44rem);
   }
 
   /* ================================================
@@ -1452,21 +1663,21 @@ footer {
    ================================================ */
   @media (max-width: 768px) {
     .navbar {
-      padding: 0 0.9rem;
+      padding: 0 0.8rem;
     }
 
     .navbar-inner {
-      height: 72px;
-      gap: 0.8rem;
+      height: 68px;
+      gap: 0.65rem;
     }
 
     .navbar-brand__wordmark {
-      font-size: 1.55rem;
+      font-size: 1.4rem;
     }
 
     .navbar-brand__mark {
-      width: 1.55rem;
-      height: 1.55rem;
+      width: 1.45rem;
+      height: 1.45rem;
     }
 
     .navbar-desktop-nav,
@@ -1482,8 +1693,8 @@ footer {
       display: block;
       position: absolute;
       top: calc(100% + 0.45rem);
-      left: 0.9rem;
-      right: 0.9rem;
+      left: 0.8rem;
+      right: 0.8rem;
       padding: 1rem;
       border-radius: 24px;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1495,6 +1706,10 @@ footer {
         inset 0 1px 0 rgba(255, 255, 255, 0.06);
       backdrop-filter: blur(18px);
       z-index: 110;
+    }
+
+    .footer-magic-card {
+      padding: 1.5rem !important;
     }
 
     .page-header h1 {
@@ -1957,7 +2172,8 @@ footer {
 
   @media (max-width: 768px) {
     .footer-grid {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
     }
 
     .footer-bottom {
@@ -2387,3 +2603,25 @@ footer {
 }
 
 /* end @layer components */
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body,
+  #root,
+  .app-shell,
+  .navbar,
+  .site-footer,
+  .glass-card,
+  .btn,
+  .form-control,
+  .tubelight-nav,
+  .tubelight-tab,
+  .navbar-mobile-toggle,
+  .navbar-mobile-link,
+  .navbar-mobile-panel,
+  .theme-toggle,
+  .theme-toggle__track,
+  .theme-toggle__thumb {
+    transition: none !important;
+  }
+}

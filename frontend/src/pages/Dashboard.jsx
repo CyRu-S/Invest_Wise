@@ -144,7 +144,7 @@ function RiskRing({ score, size = 70, strokeWidth = 5 }) {
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="rgba(99, 102, 241, 0.12)"
+        stroke="var(--dashboard-ring-track)"
         strokeWidth={strokeWidth}
       />
       <circle
@@ -170,7 +170,7 @@ function RiskRing({ score, size = 70, strokeWidth = 5 }) {
         y="50%"
         textAnchor="middle"
         dy="0.35em"
-        fill="#f8fafc"
+        fill="var(--dashboard-ring-text)"
         fontSize="0.85rem"
         fontWeight="700"
       >
@@ -329,15 +329,15 @@ function InvestorDashboard({ user, profile, funds, holdings, transactions, topPe
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="rgba(148,163,184,0.08)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={formatCompactCurrency} tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
+                <XAxis dataKey="month" tick={{ fill: 'var(--dashboard-chart-axis)', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={formatCompactCurrency} tick={{ fill: 'var(--dashboard-chart-axis)', fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
                 <Tooltip
                   formatter={(value) => formatChartCurrency(value)}
                   contentStyle={{
-                    background: 'rgba(15, 23, 42, 0.94)',
-                    border: '1px solid rgba(148,163,184,0.16)',
+                    background: 'var(--dashboard-tooltip-bg)',
+                    border: '1px solid var(--dashboard-tooltip-border)',
                     borderRadius: 16,
-                    color: '#f8fafc',
+                    color: 'var(--dashboard-tooltip-text)',
                   }}
                 />
                 <Area
@@ -371,17 +371,17 @@ function InvestorDashboard({ user, profile, funds, holdings, transactions, topPe
                     type="category"
                     dataKey="category"
                     width={120}
-                    tick={{ fill: '#cbd5e1', fontSize: 12 }}
+                    tick={{ fill: 'var(--dashboard-chart-label)', fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip
                     formatter={(value) => formatChartCurrency(value)}
                     contentStyle={{
-                      background: 'rgba(15, 23, 42, 0.94)',
-                      border: '1px solid rgba(148,163,184,0.16)',
+                      background: 'var(--dashboard-tooltip-bg)',
+                      border: '1px solid var(--dashboard-tooltip-border)',
                       borderRadius: 16,
-                      color: '#f8fafc',
+                      color: 'var(--dashboard-tooltip-text)',
                     }}
                   />
                   <Bar dataKey="amount" radius={[0, 12, 12, 0]} fill="#34d399" />

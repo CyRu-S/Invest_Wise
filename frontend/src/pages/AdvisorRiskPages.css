@@ -1,8 +1,47 @@
 .insight-page {
+  --insight-panel-border: rgba(148, 163, 184, 0.12);
+  --insight-panel-bg:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
+  --insight-panel-shadow:
+    0 30px 90px rgba(5, 10, 24, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --insight-stat-bg: rgba(4, 8, 19, 0.76);
+  --insight-soft-card-bg: rgba(255, 255, 255, 0.04);
+  --insight-action-bg:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.92), rgba(10, 14, 25, 0.96)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.14), transparent 55%);
+  --insight-action-shadow:
+    0 20px 60px rgba(5, 10, 24, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --insight-modal-bg:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(9, 12, 24, 0.98)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
   position: relative;
   overflow: hidden;
   padding-top: 2.5rem;
   padding-bottom: 4rem;
+}
+
+:root[data-theme='light'] .insight-page {
+  --insight-panel-border: rgba(148, 163, 184, 0.2);
+  --insight-panel-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 245, 249, 0.98)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 50%);
+  --insight-panel-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --insight-stat-bg: rgba(255, 255, 255, 0.88);
+  --insight-soft-card-bg: rgba(255, 255, 255, 0.74);
+  --insight-action-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 245, 249, 0.96)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 52%);
+  --insight-action-shadow:
+    0 18px 40px rgba(148, 163, 184, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --insight-modal-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.99)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 52%);
 }
 
 .insight-page__aurora {
@@ -46,14 +85,10 @@
 .risk-result-panel {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
-    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
-  box-shadow:
-    0 30px 90px rgba(5, 10, 24, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--insight-panel-bg);
+  box-shadow: var(--insight-panel-shadow);
 }
 
 .insight-hero__copy {
@@ -142,7 +177,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 1.35rem;
-  background: rgba(4, 8, 19, 0.76);
+  background: var(--insight-stat-bg);
 }
 
 .insight-hero__stat span,
@@ -164,33 +199,33 @@
 .insight-hero__stat--indigo {
   background:
     radial-gradient(circle at top right, rgba(99, 102, 241, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--insight-stat-bg);
 }
 
 .insight-hero__stat--violet {
   background:
     radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--insight-stat-bg);
 }
 
 .insight-hero__stat--emerald,
 .insight-hero__stat--conservative {
   background:
     radial-gradient(circle at top right, rgba(16, 185, 129, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--insight-stat-bg);
 }
 
 .insight-hero__stat--amber,
 .insight-hero__stat--moderate {
   background:
     radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--insight-stat-bg);
 }
 
 .insight-hero__stat--aggressive {
   background:
     radial-gradient(circle at top right, rgba(239, 68, 68, 0.18), transparent 48%),
-    rgba(4, 8, 19, 0.76);
+    var(--insight-stat-bg);
 }
 
 .insight-loading-shell {
@@ -264,9 +299,9 @@
   align-items: center;
   gap: 0.85rem;
   width: 100%;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--insight-soft-card-bg);
   color: var(--text-primary);
   cursor: pointer;
   padding: 1rem;
@@ -317,9 +352,9 @@
   display: flex;
   gap: 0.9rem;
   align-items: flex-start;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   padding: 1rem;
 }
 
@@ -413,17 +448,13 @@
   width: 100%;
   border: 1px solid rgba(99, 102, 241, 0.18);
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(17, 24, 39, 0.92), rgba(10, 14, 25, 0.96)),
-    linear-gradient(135deg, rgba(99, 102, 241, 0.14), transparent 55%);
+  background: var(--insight-action-bg);
   color: var(--text-primary);
   cursor: pointer;
   padding: 0.95rem 1.1rem;
   font: inherit;
   font-weight: 600;
-  box-shadow:
-    0 20px 60px rgba(5, 10, 24, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: var(--insight-action-shadow);
   transition:
     transform var(--transition-base),
     border-color var(--transition-base),
@@ -477,14 +508,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
-    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
-  box-shadow:
-    0 30px 90px rgba(5, 10, 24, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--insight-panel-bg);
+  box-shadow: var(--insight-panel-shadow);
   padding: 1.5rem;
   text-align: center;
 }
@@ -520,9 +547,9 @@
 }
 
 .advisor-booking-card__meta > div {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   padding: 0.95rem 1rem;
 }
 
@@ -681,9 +708,9 @@
   min-height: 124px;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   padding: 0.95rem 1rem;
 }
 
@@ -883,9 +910,9 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   padding: 0.8rem 0.9rem;
   color: var(--text-primary);
 }
@@ -897,9 +924,9 @@
 
 .advisor-detail-checkout > div,
 .advisor-availability-card__summary > div {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   padding: 0.95rem 1rem;
 }
 
@@ -996,14 +1023,12 @@
   max-height: calc(100dvh - 64px - 2.5rem);
   overflow-y: auto;
   overscroll-behavior: contain;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(9, 12, 24, 0.98)),
-    linear-gradient(135deg, rgba(99, 102, 241, 0.12), transparent 45%);
+  background: var(--insight-modal-bg);
   box-shadow:
-    0 35px 100px rgba(2, 6, 23, 0.68),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 35px 100px rgba(2, 6, 23, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
   padding: 1.35rem;
 }
 
@@ -1037,9 +1062,9 @@
 
 .advisor-detail-modal__summary > div,
 .advisor-availability-list__item {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   padding: 0.95rem 1rem;
 }
 
@@ -1067,9 +1092,9 @@
 .advisor-detail-modal__field select,
 .advisor-detail-modal__field textarea {
   width: 100%;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   color: var(--text-primary);
   padding: 0.95rem 1rem;
   font: inherit;
@@ -1233,9 +1258,9 @@
 
 .advisor-appointments-spotlight__details > div,
 .advisor-appointment-card__meta > div {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   padding: 0.95rem 1rem;
 }
 
@@ -1297,8 +1322,8 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--insight-panel-border);
+  background: var(--insight-soft-card-bg);
   color: var(--text-primary);
   padding: 0.55rem 0.9rem;
   font-size: 0.85rem;
@@ -1327,9 +1352,9 @@
 }
 
 .advisor-appointments-filter {
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--insight-panel-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--insight-soft-card-bg);
   color: var(--text-secondary);
   cursor: pointer;
   padding: 0.58rem 0.9rem;
@@ -1443,8 +1468,8 @@
 }
 
 .advisor-appointment-card__action--ghost {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(148, 163, 184, 0.14);
+  background: var(--insight-soft-card-bg);
+  border-color: var(--insight-panel-border);
   color: var(--text-secondary);
 }
 

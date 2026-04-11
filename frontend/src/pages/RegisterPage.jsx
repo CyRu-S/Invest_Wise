@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { getApiErrorMessage } from '../lib/apiErrors';
+import AuthColdStartNotice from '../components/AuthColdStartNotice';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
-export default function RegisterPage() {
+export default function RegisterPage({ showColdStartNotice = false }) {
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', fullName: '', role: 'INVESTOR' });
   const [verificationCode, setVerificationCode] = useState('');
   const [step, setStep] = useState('register');
@@ -68,6 +69,8 @@ export default function RegisterPage() {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-start overflow-x-hidden overflow-y-auto px-4 py-10 sm:justify-center sm:px-6 sm:py-14" style={{ background: '#0a0e1a' }} id="register-page">
+      <AuthColdStartNotice shouldOpen={showColdStartNotice} />
+
       <div className="absolute inset-0 z-0">
         <CanvasRevealEffect
           animationSpeed={3}

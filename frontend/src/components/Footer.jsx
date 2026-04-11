@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Gem } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { MagicCard } from './MagicCard';
 
@@ -9,16 +10,26 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
         <MagicCard
-          className="glass-card footer-magic-card border-white/10 bg-black/40"
+          className="glass-card footer-magic-card"
           enableStars={true}
           particleCount={10}
         >
           <div className="relative z-10">
             <div className="footer-grid">
               <div className="footer-brand">
-                <span className="navbar-brand" style={{ fontSize: '1.2rem' }}>💎 InvestWise</span>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.75rem', lineHeight: 1.7 }}>
-                  FSAD-PS06 — Investment Perception and Selection Behavior Towards Mutual Funds.
+                <span className="navbar-brand footer-brand__marking" style={{ fontSize: '1.2rem' }}>
+                  <Gem size={18} strokeWidth={2.2} />
+                  InvestWise
+                </span>
+                <p
+                  style={{
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85rem',
+                    marginTop: '0.75rem',
+                    lineHeight: 1.7,
+                  }}
+                >
+                  FSAD-PS06 - Investment Perception and Selection Behavior Towards Mutual Funds.
                   A full-stack decision support system.
                 </p>
               </div>
@@ -56,7 +67,7 @@ export default function Footer() {
             <div className="footer-bottom">
               <span>&copy; 2026 InvestWise. Built for FSAD-PS06.</span>
               <span style={{ color: 'var(--text-muted)' }}>
-                Made with React, Spring Boot &amp; ☕
+                Made with React, Spring Boot &amp; care.
               </span>
             </div>
           </div>

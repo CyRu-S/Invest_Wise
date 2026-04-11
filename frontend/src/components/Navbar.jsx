@@ -14,6 +14,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import SkyToggle from './ui/sky-toggle';
 
 const navItems = {
   common: [
@@ -36,7 +37,7 @@ const navItems = {
   ],
 };
 
-export default function Navbar() {
+export default function Navbar({ theme, onToggleTheme }) {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -122,6 +123,11 @@ export default function Navbar() {
         </div>
 
         <div className="navbar-user navbar-desktop-user">
+          <SkyToggle
+            checked={theme === 'dark'}
+            onChange={onToggleTheme}
+            ariaLabel={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          />
           <span className="user-badge">{user?.role}</span>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             {user?.fullName}
@@ -133,6 +139,12 @@ export default function Navbar() {
         </div>
 
         <div className="navbar-mobile-controls">
+          <SkyToggle
+            checked={theme === 'dark'}
+            onChange={onToggleTheme}
+            ariaLabel={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            size="compact"
+          />
           <span className="user-badge navbar-mobile-role">{user?.role}</span>
           <button
             type="button"

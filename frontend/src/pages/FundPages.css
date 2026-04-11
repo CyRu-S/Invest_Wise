@@ -1,8 +1,71 @@
 .fund-page {
+  --fund-panel-border: rgba(148, 163, 184, 0.12);
+  --fund-panel-bg:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
+    linear-gradient(140deg, rgba(99, 102, 241, 0.1), transparent 45%);
+  --fund-panel-shadow:
+    0 30px 90px rgba(5, 10, 24, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --fund-stat-bg: rgba(4, 8, 19, 0.7);
+  --fund-stat-spotlight:
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 48%),
+    rgba(4, 8, 19, 0.78);
+  --fund-field-bg: rgba(10, 14, 25, 0.84);
+  --fund-field-shadow: 0 18px 60px rgba(5, 10, 24, 0.4);
+  --fund-soft-card-bg: rgba(255, 255, 255, 0.035);
+  --fund-tooltip-bg: rgba(6, 10, 24, 0.92);
+  --fund-tooltip-shadow: 0 20px 60px rgba(5, 10, 24, 0.5);
+  --fund-back-bg: rgba(10, 14, 25, 0.8);
+  --fund-ticker-color: #a5b4fc;
+  --fund-equity-bg: rgba(99, 102, 241, 0.16);
+  --fund-equity-border: rgba(129, 140, 248, 0.18);
+  --fund-equity-text: #c7d2fe;
+  --fund-debt-bg: rgba(16, 185, 129, 0.16);
+  --fund-debt-border: rgba(110, 231, 183, 0.18);
+  --fund-debt-text: #a7f3d0;
+  --fund-hybrid-bg: rgba(245, 158, 11, 0.16);
+  --fund-hybrid-border: rgba(253, 230, 138, 0.18);
+  --fund-hybrid-text: #fde68a;
+  --fund-elss-bg: rgba(244, 114, 182, 0.16);
+  --fund-elss-border: rgba(251, 207, 232, 0.18);
+  --fund-elss-text: #fbcfe8;
   position: relative;
   overflow: hidden;
   padding-top: 2.5rem;
   padding-bottom: 4rem;
+}
+
+:root[data-theme='light'] .fund-page {
+  --fund-panel-border: rgba(148, 163, 184, 0.2);
+  --fund-panel-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 245, 249, 0.98)),
+    linear-gradient(140deg, rgba(99, 102, 241, 0.08), transparent 52%);
+  --fund-panel-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --fund-stat-bg: rgba(255, 255, 255, 0.88);
+  --fund-stat-spotlight:
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 48%),
+    rgba(255, 255, 255, 0.92);
+  --fund-field-bg: rgba(255, 255, 255, 0.88);
+  --fund-field-shadow: 0 16px 40px rgba(148, 163, 184, 0.18);
+  --fund-soft-card-bg: rgba(255, 255, 255, 0.72);
+  --fund-tooltip-bg: rgba(255, 255, 255, 0.96);
+  --fund-tooltip-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  --fund-back-bg: rgba(255, 255, 255, 0.84);
+  --fund-ticker-color: #4f46e5;
+  --fund-equity-bg: rgba(99, 102, 241, 0.12);
+  --fund-equity-border: rgba(99, 102, 241, 0.18);
+  --fund-equity-text: #4338ca;
+  --fund-debt-bg: rgba(16, 185, 129, 0.14);
+  --fund-debt-border: rgba(16, 185, 129, 0.18);
+  --fund-debt-text: #047857;
+  --fund-hybrid-bg: rgba(245, 158, 11, 0.16);
+  --fund-hybrid-border: rgba(245, 158, 11, 0.2);
+  --fund-hybrid-text: #b45309;
+  --fund-elss-bg: rgba(244, 114, 182, 0.16);
+  --fund-elss-border: rgba(244, 114, 182, 0.2);
+  --fund-elss-text: #be185d;
 }
 
 .fund-page__aurora {
@@ -43,14 +106,10 @@
 .fund-hero__rail {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--fund-panel-border);
   border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(9, 12, 24, 0.96)),
-    linear-gradient(140deg, rgba(99, 102, 241, 0.1), transparent 45%);
-  box-shadow:
-    0 30px 90px rgba(5, 10, 24, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--fund-panel-bg);
+  box-shadow: var(--fund-panel-shadow);
 }
 
 .fund-hero__copy {
@@ -115,27 +174,27 @@
 }
 
 .fund-pill--EQUITY {
-  background: rgba(99, 102, 241, 0.16);
-  border-color: rgba(129, 140, 248, 0.18);
-  color: #c7d2fe;
+  background: var(--fund-equity-bg);
+  border-color: var(--fund-equity-border);
+  color: var(--fund-equity-text);
 }
 
 .fund-pill--DEBT {
-  background: rgba(16, 185, 129, 0.16);
-  border-color: rgba(110, 231, 183, 0.18);
-  color: #a7f3d0;
+  background: var(--fund-debt-bg);
+  border-color: var(--fund-debt-border);
+  color: var(--fund-debt-text);
 }
 
 .fund-pill--HYBRID {
-  background: rgba(245, 158, 11, 0.16);
-  border-color: rgba(253, 230, 138, 0.18);
-  color: #fde68a;
+  background: var(--fund-hybrid-bg);
+  border-color: var(--fund-hybrid-border);
+  color: var(--fund-hybrid-text);
 }
 
 .fund-pill--ELSS {
-  background: rgba(244, 114, 182, 0.16);
-  border-color: rgba(251, 207, 232, 0.18);
-  color: #fbcfe8;
+  background: var(--fund-elss-bg);
+  border-color: var(--fund-elss-border);
+  color: var(--fund-elss-text);
 }
 
 .fund-hero__rail {
@@ -151,7 +210,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 1.35rem;
-  background: rgba(4, 8, 19, 0.7);
+  background: var(--fund-stat-bg);
 }
 
 .fund-hero__stat strong {
@@ -178,9 +237,7 @@
 }
 
 .fund-hero__stat--spotlight {
-  background:
-    radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 48%),
-    rgba(4, 8, 19, 0.78);
+  background: var(--fund-stat-spotlight);
 }
 
 .fund-toolbar {
@@ -195,11 +252,11 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--fund-panel-border);
   border-radius: 24px;
-  background: rgba(10, 14, 25, 0.84);
+  background: var(--fund-field-bg);
   padding: 0.95rem 1rem;
-  box-shadow: 0 18px 60px rgba(5, 10, 24, 0.4);
+  box-shadow: var(--fund-field-shadow);
 }
 
 .fund-field svg {
@@ -272,11 +329,11 @@
 
 .fund-empty-state,
 .fund-loading-shell {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--fund-panel-border);
   border-radius: 32px;
-  background: rgba(10, 14, 25, 0.84);
+  background: var(--fund-field-bg);
   min-height: 300px;
-  box-shadow: 0 24px 80px rgba(5, 10, 24, 0.45);
+  box-shadow: var(--fund-field-shadow);
 }
 
 .fund-empty-state {
@@ -340,8 +397,8 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--fund-panel-border);
+  background: var(--fund-soft-card-bg);
   color: var(--text-secondary);
 }
 
@@ -367,7 +424,7 @@
 
 .fund-bento-card__ticker,
 .fund-detail-card__ticker {
-  color: #a5b4fc;
+  color: var(--fund-ticker-color);
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -405,8 +462,8 @@
 .fund-detail-card__headline-stat,
 .fund-invest__preview > div {
   border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--fund-panel-border);
+  background: var(--fund-soft-card-bg);
   padding: 0.95rem 1rem;
 }
 
@@ -478,9 +535,9 @@
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--fund-panel-border);
   border-radius: 999px;
-  background: rgba(10, 14, 25, 0.8);
+  background: var(--fund-back-bg);
   padding: 0.7rem 1rem;
   color: var(--text-secondary);
   cursor: pointer;
@@ -554,9 +611,9 @@
 .fund-chart-tooltip {
   border: 1px solid rgba(129, 140, 248, 0.16);
   border-radius: 18px;
-  background: rgba(6, 10, 24, 0.92);
+  background: var(--fund-tooltip-bg);
   padding: 0.8rem 0.9rem;
-  box-shadow: 0 20px 60px rgba(5, 10, 24, 0.5);
+  box-shadow: var(--fund-tooltip-shadow);
 }
 
 .fund-chart-tooltip__label {
@@ -571,9 +628,9 @@
 }
 
 .fund-invest__chip {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--fund-panel-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--fund-soft-card-bg);
   color: var(--text-primary);
   cursor: pointer;
   padding: 0.7rem 0.8rem;
@@ -600,9 +657,9 @@
 }
 
 .fund-invest__field input {
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--fund-panel-border);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--fund-soft-card-bg);
   padding: 0.95rem 1rem;
 }
 
