@@ -685,3 +685,90 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================
+   Light Theme — hardcoded color overrides
+   ============================================ */
+:root[data-theme='light'] .admin-panel-hero__kicker,
+:root[data-theme='light'] .admin-panel-section-eyebrow {
+  color: #4338ca;
+}
+
+:root[data-theme='light'] .admin-panel-user__avatar {
+  background:
+    radial-gradient(circle at top left, rgba(129, 140, 248, 0.25), transparent 60%),
+    rgba(99, 102, 241, 0.12);
+  color: #312e81;
+}
+
+:root[data-theme='light'] .admin-panel-badge--investor {
+  background: rgba(99, 102, 241, 0.1);
+  color: #4338ca;
+}
+
+:root[data-theme='light'] .admin-panel-badge--advisor {
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+}
+
+:root[data-theme='light'] .admin-panel-badge--analyst {
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+}
+
+:root[data-theme='light'] .admin-panel-badge--admin {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+:root[data-theme='light'] .admin-panel-badge--provider-google {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1e40af;
+}
+
+:root[data-theme='light'] .admin-panel-badge--provider-local {
+  background: rgba(148, 163, 184, 0.12);
+  color: #475569;
+}
+
+:root[data-theme='light'] .admin-panel-badge--verified {
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+}
+
+:root[data-theme='light'] .admin-panel-badge--muted {
+  background: rgba(148, 163, 184, 0.12);
+  color: #475569;
+}
+
+:root[data-theme='light'] .admin-panel-badge--suspended {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+:root[data-theme='light'] .admin-panel-delete {
+  border-color: rgba(239, 68, 68, 0.22);
+  background: rgba(254, 226, 226, 0.5);
+  color: #991b1b;
+}
+
+:root[data-theme='light'] .admin-panel-suspension {
+  background: rgba(254, 252, 232, 0.6);
+  border-color: rgba(245, 158, 11, 0.24);
+  color: #92400e;
+}
+
+:root[data-theme='light'] .admin-panel-suspension.is-reactivate {
+  background: rgba(209, 250, 229, 0.5);
+  border-color: rgba(16, 185, 129, 0.24);
+  color: #065f46;
+}
+
+:root[data-theme='light'] .admin-panel-invite__submit {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+:root[data-theme='light'] .admin-panel-chip {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(148, 163, 184, 0.2);
+}

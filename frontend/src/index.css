@@ -443,26 +443,26 @@ footer {
 
 :root[data-theme='light'] {
   --color-foreground: #0f172a;
-  --color-background: #f8fafc;
-  --color-secondary: #e2e8f0;
+  --color-background: #eef4fa;
+  --color-secondary: #dde7f2;
   --color-muted-foreground: #475569;
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-glass: rgba(255, 255, 255, 0.72);
-  --bg-glass-hover: rgba(255, 255, 255, 0.92);
+  --bg-primary: #eef4fa;
+  --bg-secondary: #f8fbff;
+  --bg-card: rgba(246, 249, 253, 0.92);
+  --bg-glass: rgba(247, 250, 254, 0.78);
+  --bg-glass-hover: rgba(251, 253, 255, 0.94);
   --border-glass: rgba(15, 23, 42, 0.1);
   --border-glass-hover: rgba(15, 23, 42, 0.18);
-  --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
-  --gradient-card: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
+  --gradient-bg: linear-gradient(135deg, #eef4fa 0%, #dfe8f2 48%, #eef4fa 100%);
+  --gradient-card: linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(56, 189, 248, 0.09) 100%);
   --text-primary: #0f172a;
-  --text-secondary: #334155;
+  --text-secondary: #42546c;
   --text-muted: #64748b;
   --text-accent: #4338ca;
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 14px 30px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.12);
-  --shadow-glow: 0 0 18px rgba(99, 102, 241, 0.1);
+  --shadow-md: 0 14px 30px rgba(15, 23, 42, 0.1);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.14);
+  --shadow-glow: 0 0 18px rgba(99, 102, 241, 0.14);
   --shadow-glow-success: 0 0 18px rgba(16, 185, 129, 0.12);
   --nav-surface: rgba(248, 250, 252, 0.9);
   --nav-fade: rgba(248, 250, 252, 0.88);
@@ -484,14 +484,14 @@ footer {
   --select-option-bg: #ffffff;
   --select-option-text: #0f172a;
   --app-doodle-overlay:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 32%),
-    radial-gradient(circle at 50% 20%, rgba(129, 140, 248, 0.1), transparent 28%),
-    linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.16), transparent 32%),
+    radial-gradient(circle at 50% 20%, rgba(129, 140, 248, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(239, 245, 252, 0.98), rgba(232, 239, 248, 0.97));
   --app-doodle-pattern:
-    linear-gradient(180deg, rgba(148, 163, 184, 0.06), rgba(148, 163, 184, 0.12)),
+    linear-gradient(180deg, rgba(120, 137, 167, 0.1), rgba(120, 137, 167, 0.16)),
     url('/background.svg');
-  --app-doodle-pattern-opacity: 0.16;
+  --app-doodle-pattern-opacity: 0.26;
   --app-doodle-blend: multiply;
 }
 
@@ -557,6 +557,18 @@ footer {
   body.modal-open #root {
     height: 100dvh;
     overflow: hidden;
+  }
+
+  body.modal-open .navbar {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  body.modal-open .site-footer {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   h1, h2, h3, h4, h5, h6 {

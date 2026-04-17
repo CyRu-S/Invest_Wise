@@ -789,3 +789,66 @@
     min-width: 720px;
   }
 }
+
+/* ============================================
+   Light Theme — hardcoded color overrides
+   ============================================ */
+:root[data-theme='light'] .portfolio-hero__kicker,
+:root[data-theme='light'] .portfolio-card__eyebrow {
+  color: #4338ca;
+}
+
+:root[data-theme='light'] .portfolio-tab.is-active {
+  background: rgba(99, 102, 241, 0.14);
+  color: #312e81;
+}
+
+:root[data-theme='light'] .portfolio-hero__button--primary {
+  background: rgba(99, 102, 241, 0.14);
+  color: #312e81;
+}
+
+:root[data-theme='light'] .portfolio-hero__button--ghost {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+:root[data-theme='light'] .portfolio-card__sell,
+:root[data-theme='light'] .portfolio-modal__close {
+  border-color: rgba(239, 68, 68, 0.22);
+  background: rgba(254, 226, 226, 0.5);
+  color: #991b1b;
+}
+
+:root[data-theme='light'] .portfolio-status--buy,
+:root[data-theme='light'] .portfolio-status--success,
+:root[data-theme='light'] .portfolio-status--income {
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+}
+
+:root[data-theme='light'] .portfolio-status--sell {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+:root[data-theme='light'] .portfolio-status--pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+}
+
+:root[data-theme='light'] .portfolio-status--failed,
+:root[data-theme='light'] .portfolio-status--expense {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+}
+
+:root[data-theme='light'] .portfolio-status--completed,
+:root[data-theme='light'] .portfolio-status--info,
+:root[data-theme='light'] .portfolio-status--refund {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1e40af;
+}
+
+:root[data-theme='light'] .portfolio-quick-amount.is-active {
+  background: rgba(99, 102, 241, 0.14);
+}

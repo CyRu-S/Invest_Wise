@@ -14,6 +14,10 @@ import {
   Users,
 } from 'lucide-react';
 import api from '../services/api';
+import {
+  fetchAdminBundle,
+  getCachedAdminBundle,
+} from '../services/appDataCache';
 import './AdminPanelPage.css';
 
 function formatDate(value) {
@@ -48,35 +52,39 @@ export default function AdminPanel() {
   });
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const fetchData = async () => {
+  const applyAdminBundle = (bundle) => {
+    setUsers(bundle?.users || []);
+    setStats(bundle?.stats || null);
+    setAuditLogs(bundle?.auditLogs || []);
+  };
+
+  const fetchData = async ({ forceRefresh = false, background = false } = {}) => {
+    if (!background) {
+      setLoading(true);
+    }
+
     try {
-      const [usersResponse, statsResponse, auditResponse] = await Promise.allSettled([
-        api.get('/admin/users'),
-        api.get('/admin/stats'),
-        api.get('/admin/audit-logs'),
-      ]);
-
-      if (usersResponse.status === 'fulfilled') {
-        setUsers(usersResponse.value.data);
-      }
-
-      if (statsResponse.status === 'fulfilled') {
-        setStats(statsResponse.value.data);
-      }
-
-      if (auditResponse.status === 'fulfilled') {
-        setAuditLogs(auditResponse.value.data);
-      } else {
-        setAuditLogs([]);
-      }
+      const { data } = await fetchAdminBundle({ forceRefresh });
+      applyAdminBundle(data);
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      if (!background) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    const cachedBundle = getCachedAdminBundle();
+
+    if (cachedBundle) {
+      applyAdminBundle(cachedBundle);
+      setLoading(false);
+      fetchData({ forceRefresh: true, background: true });
+      return;
+    }
+
     fetchData();
   }, []);
 
@@ -86,7 +94,7 @@ export default function AdminPanel() {
     try {
       await api.delete(`/admin/users/${id}`);
       setMessage({ type: 'success', text: 'User deleted successfully.' });
-      fetchData();
+      await fetchData({ forceRefresh: true });
     } catch (error) {
       setMessage({
         type: 'error',
@@ -99,7 +107,7 @@ export default function AdminPanel() {
     try {
       await api.put(`/admin/users/${id}/role`, { role });
       setMessage({ type: 'success', text: `Role updated to ${role}.` });
-      fetchData();
+      await fetchData({ forceRefresh: true });
     } catch (error) {
       setMessage({
         type: 'error',
@@ -126,7 +134,7 @@ export default function AdminPanel() {
         role: 'INVESTOR',
         password: '',
       });
-      fetchData();
+      await fetchData({ forceRefresh: true });
     } catch (error) {
       console.error(error);
       setMessage({
@@ -143,7 +151,7 @@ export default function AdminPanel() {
         reason: user.suspended ? 'Account reactivated by admin.' : 'Account suspended by admin.',
       });
       setMessage({ type: 'success', text: response.data?.message || 'Account updated.' });
-      fetchData();
+      await fetchData({ forceRefresh: true });
     } catch (error) {
       console.error(error);
       setMessage({

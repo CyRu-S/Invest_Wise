@@ -17,6 +17,16 @@ import {
 } from 'lucide-react';
 import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import api from '../services/api';
+import {
+  fetchAdvisorAvailability,
+  fetchAdvisorDetailBundle,
+  fetchAdvisorHubBundle,
+  fetchAdvisorWorkspaceBundle,
+  fetchInvestorBundle,
+  getCachedAdvisorAvailability,
+  getCachedAdvisorHubBundle,
+} from '../services/appDataCache';
+import './PortfolioPage.css';
 import './AdvisorRiskPages.css';
 
 function formatCurrency(value) {
@@ -66,12 +76,53 @@ export default function AdvisorHub() {
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const applyAdvisorHubBundle = (bundle) => {
+    setAdvisors(bundle?.advisors || []);
+    setAppointments(bundle?.appointments || []);
+  };
+
+  const loadAdvisorHub = async ({
+    forceRefresh = false,
+    background = false,
+    showAppointmentsLoader = false,
+  } = {}) => {
+    if (!background) {
+      setLoading(true);
+    }
+
+    if (showAppointmentsLoader) {
+      setAppointmentsLoading(true);
+    }
+
+    try {
+      const { data } = await fetchAdvisorHubBundle({ forceRefresh });
+      applyAdvisorHubBundle(data);
+      setAppointmentsError('');
+    } catch (error) {
+      console.error(error);
+      setAppointmentsError('Unable to load your bookings right now.');
+    } finally {
+      if (!background) {
+        setLoading(false);
+      }
+
+      if (showAppointmentsLoader) {
+        setAppointmentsLoading(false);
+      }
+    }
+  };
+
   useEffect(() => {
-    api
-      .get('/advisors')
-      .then((response) => setAdvisors(response.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const cachedBundle = getCachedAdvisorHubBundle();
+
+    if (cachedBundle) {
+      applyAdvisorHubBundle(cachedBundle);
+      setLoading(false);
+      loadAdvisorHub({ forceRefresh: true, background: true });
+      return;
+    }
+
+    loadAdvisorHub();
   }, []);
 
   useEffect(() => {
@@ -82,27 +133,26 @@ export default function AdvisorHub() {
     };
   }, [rescheduleModal]);
 
-  const loadAppointments = async () => {
-    setAppointmentsLoading(true);
-    setAppointmentsError('');
-
-    try {
-      const response = await api.get('/advisors/appointments');
-      setAppointments(response.data);
-    } catch (error) {
-      console.error(error);
-      setAppointmentsError('Unable to load your bookings right now.');
-    } finally {
-      setAppointmentsLoading(false);
-    }
+  const refreshInvestorAdvisorCaches = async (advisorId) => {
+    await Promise.allSettled([
+      fetchAdvisorHubBundle({ forceRefresh: true }),
+      fetchInvestorBundle({ forceRefresh: true }),
+      fetchAdvisorWorkspaceBundle({ forceRefresh: true }),
+      advisorId ? fetchAdvisorAvailability(advisorId, { forceRefresh: true }) : Promise.resolve(),
+      advisorId ? fetchAdvisorDetailBundle(advisorId, { forceRefresh: true }) : Promise.resolve(),
+    ]);
   };
 
   const handleToggleAppointments = async () => {
     const nextOpen = !appointmentsOpen;
     setAppointmentsOpen(nextOpen);
 
-    if (nextOpen && !appointments.length && !appointmentsLoading && !appointmentsError) {
-      await loadAppointments();
+    if (nextOpen && !appointmentsLoading) {
+      await loadAdvisorHub({
+        forceRefresh: true,
+        background: true,
+        showAppointmentsLoader: true,
+      });
     }
   };
 
@@ -116,6 +166,7 @@ export default function AdvisorHub() {
         currentAppointments.map((item) => (item.id === appointment.id ? response.data : item))
       );
       setMessage({ type: 'success', text: 'Booking cancelled and wallet amount refunded.' });
+      await refreshInvestorAdvisorCaches(appointment.advisorId);
     } catch (error) {
       console.error(error);
       setMessage({
@@ -134,9 +185,19 @@ export default function AdvisorHub() {
     setRescheduleSlots([]);
     setMessage({ type: '', text: '' });
 
+    const cachedAvailability = getCachedAdvisorAvailability(appointment.advisorId);
+    if (cachedAvailability) {
+      const openSlots = cachedAvailability
+        .filter((slot) => !slot.booked)
+        .filter((slot) => new Date(slot.startTime).getTime() > Date.now());
+      setRescheduleSlots(openSlots);
+    }
+
     try {
-      const response = await api.get(`/advisors/${appointment.advisorId}/availability`);
-      const openSlots = response.data
+      const { data } = await fetchAdvisorAvailability(appointment.advisorId, {
+        forceRefresh: Boolean(cachedAvailability),
+      });
+      const openSlots = data
         .filter((slot) => !slot.booked)
         .filter((slot) => new Date(slot.startTime).getTime() > Date.now());
       setRescheduleSlots(openSlots);
@@ -180,6 +241,7 @@ export default function AdvisorHub() {
       setRescheduleSlots([]);
       setRescheduleNotes('');
       setRescheduleTime('');
+      await refreshInvestorAdvisorCaches(rescheduleModal.advisorId);
     } catch (error) {
       console.error(error);
       setMessage({
@@ -490,72 +552,74 @@ export default function AdvisorHub() {
       )}
 
       {rescheduleModal ? (
-        <div className="advisor-detail-modal-overlay" onClick={() => setRescheduleModal(null)}>
-          <div className="advisor-detail-modal advisor-detail-modal--compact" onClick={(event) => event.stopPropagation()}>
-            <div className="advisor-detail-modal__header">
-              <div>
-                <span className="advisor-card__eyebrow">
-                  <CalendarRange size={15} />
-                  Reschedule booking
-                </span>
-                <h3>{rescheduleModal.advisorName}</h3>
-                <p>Choose a new published slot or enter a preferred time for this consultation.</p>
+        <div className="portfolio-modal-overlay advisor-booking-modal-overlay" onClick={() => setRescheduleModal(null)}>
+          <div className="portfolio-modal advisor-booking-modal advisor-booking-modal--compact" onClick={(event) => event.stopPropagation()}>
+            <div className="advisor-booking-modal__scroll">
+              <div className="portfolio-modal__header">
+                <div className="portfolio-modal__title-block">
+                  <span className="portfolio-card__eyebrow">
+                    <CalendarRange size={15} />
+                    Reschedule booking
+                  </span>
+                  <h3>{rescheduleModal.advisorName}</h3>
+                  <p>Choose a new published slot or enter a preferred time for this consultation.</p>
+                </div>
+                <button className="portfolio-modal__close" onClick={() => setRescheduleModal(null)}>
+                  Close
+                </button>
               </div>
-              <button className="portfolio-modal__close" onClick={() => setRescheduleModal(null)}>
-                Close
-              </button>
-            </div>
 
-            <label className="advisor-detail-modal__field" htmlFor="reschedule-slot">
-              <span>Available slot</span>
-              <select
-                id="reschedule-slot"
-                value={String(rescheduleTime).startsWith('slot:') ? rescheduleTime : ''}
-                onChange={(event) => setRescheduleTime(event.target.value)}
-              >
-                <option value="">Choose an open slot</option>
-                {rescheduleSlots.map((slot) => (
-                  <option key={slot.id} value={`slot:${slot.id}`}>
-                    {formatDateTime(slot.startTime)} to {formatDateTime(slot.endTime)}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="portfolio-modal__field advisor-booking-modal__field" htmlFor="reschedule-slot">
+                <span>Available slot</span>
+                <select
+                  id="reschedule-slot"
+                  value={String(rescheduleTime).startsWith('slot:') ? rescheduleTime : ''}
+                  onChange={(event) => setRescheduleTime(event.target.value)}
+                >
+                  <option value="">Choose an open slot</option>
+                  {rescheduleSlots.map((slot) => (
+                    <option key={slot.id} value={`slot:${slot.id}`}>
+                      {formatDateTime(slot.startTime)} to {formatDateTime(slot.endTime)}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label className="advisor-detail-modal__field" htmlFor="reschedule-manual-time">
-              <span>Preferred time</span>
-              <input
-                id="reschedule-manual-time"
-                type="datetime-local"
-                value={String(rescheduleTime).startsWith('slot:') ? '' : rescheduleTime}
-                onChange={(event) => setRescheduleTime(event.target.value)}
-              />
-            </label>
+              <label className="portfolio-modal__field advisor-booking-modal__field" htmlFor="reschedule-manual-time">
+                <span>Preferred time</span>
+                <input
+                  id="reschedule-manual-time"
+                  type="datetime-local"
+                  value={String(rescheduleTime).startsWith('slot:') ? '' : rescheduleTime}
+                  onChange={(event) => setRescheduleTime(event.target.value)}
+                />
+              </label>
 
-            <label className="advisor-detail-modal__field" htmlFor="reschedule-notes">
-              <span>Notes</span>
-              <textarea
-                id="reschedule-notes"
-                rows="4"
-                value={rescheduleNotes}
-                onChange={(event) => setRescheduleNotes(event.target.value)}
-                placeholder="Anything new the advisor should know for the rescheduled session?"
-              />
-            </label>
+              <label className="portfolio-modal__field advisor-booking-modal__field" htmlFor="reschedule-notes">
+                <span>Notes</span>
+                <textarea
+                  id="reschedule-notes"
+                  rows="4"
+                  value={rescheduleNotes}
+                  onChange={(event) => setRescheduleNotes(event.target.value)}
+                  placeholder="Anything new the advisor should know for the rescheduled session?"
+                />
+              </label>
 
-            <div className="advisor-detail-modal__actions">
-              <button
-                type="button"
-                className="advisor-card__action advisor-card__action--secondary advisor-detail-card__cta"
-                disabled={rescheduleLoading}
-                onClick={handleReschedule}
-              >
-                <CalendarRange size={16} />
-                {rescheduleLoading ? 'Updating...' : 'Confirm new time'}
-              </button>
-              <button type="button" className="advisor-card__action advisor-card__action--primary" onClick={() => setRescheduleModal(null)}>
-                Cancel
-              </button>
+              <div className="portfolio-modal__actions">
+                <button
+                  type="button"
+                  className="btn btn-primary advisor-detail-card__cta"
+                  disabled={rescheduleLoading}
+                  onClick={handleReschedule}
+                >
+                  <CalendarRange size={16} />
+                  {rescheduleLoading ? 'Updating...' : 'Confirm new time'}
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={() => setRescheduleModal(null)}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

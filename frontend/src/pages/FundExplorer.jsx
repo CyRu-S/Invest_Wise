@@ -13,6 +13,9 @@ import {
 import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import './FundPages.css';
 import api from '../services/api';
+import { readSessionCache, sessionCacheKeys, writeSessionCache } from '../services/sessionCache';
+
+const PUBLIC_FUNDS_TTL_MS = 5 * 60 * 1000;
 
 function formatCurrency(value, fallback = 'N/A') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -53,22 +56,42 @@ export default function FundExplorer() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isActive = true;
+
     const fetchFunds = async () => {
+      const params = {};
+      if (category) params.category = category;
+      if (maxRisk) params.maxRisk = maxRisk;
+
+      const cacheKey = sessionCacheKeys.publicFunds(params);
+      const cachedFunds = readSessionCache(cacheKey, { ttlMs: PUBLIC_FUNDS_TTL_MS });
+
+      if (cachedFunds) {
+        setFunds(cachedFunds);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        const params = {};
-        if (category) params.category = category;
-        if (maxRisk) params.maxRisk = maxRisk;
         const response = await api.get('/funds/public', { params });
+        if (!isActive) return;
         setFunds(response.data);
+        writeSessionCache(cacheKey, response.data);
       } catch (error) {
         console.error('Failed to fetch funds:', error);
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchFunds();
+
+    return () => {
+      isActive = false;
+    };
   }, [category, maxRisk]);
 
   const filteredFunds = funds.filter((fund) => {

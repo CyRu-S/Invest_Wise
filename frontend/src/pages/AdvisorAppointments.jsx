@@ -15,6 +15,13 @@ import {
 } from 'lucide-react';
 import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import api from '../services/api';
+import {
+  fetchAdvisorHubBundle,
+  fetchAdvisorWorkspaceBundle,
+  fetchInvestorBundle,
+  getCachedAdvisorWorkspaceBundle,
+} from '../services/appDataCache';
+import { clearSessionCacheByPrefix } from '../services/sessionCache';
 import './AdvisorRiskPages.css';
 
 function formatCurrency(value) {
@@ -105,20 +112,52 @@ export default function AdvisorAppointments() {
   });
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  const applyAdvisorWorkspaceBundle = (bundle) => {
+    setAppointments(bundle?.appointments || []);
+    setAvailabilitySlots(bundle?.availabilitySlots || []);
+  };
+
+  const loadAdvisorWorkspace = async ({ forceRefresh = false, background = false } = {}) => {
+    if (!background) {
+      setLoading(true);
+    }
+
+    try {
+      const { data } = await fetchAdvisorWorkspaceBundle({ forceRefresh });
+      applyAdvisorWorkspaceBundle(data);
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('Unable to load advisor appointments right now.');
+    } finally {
+      if (!background) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const refreshSharedAdvisorCaches = async () => {
+    clearSessionCacheByPrefix('advisor:detail:');
+    clearSessionCacheByPrefix('advisor:availability:');
+
+    await Promise.allSettled([
+      fetchAdvisorWorkspaceBundle({ forceRefresh: true }),
+      fetchAdvisorHubBundle({ forceRefresh: true }),
+      fetchInvestorBundle({ forceRefresh: true }),
+    ]);
+  };
+
   useEffect(() => {
-    Promise.all([
-      api.get('/advisors/advisor-appointments'),
-      api.get('/advisors/advisor-availability'),
-    ])
-      .then(([appointmentsResponse, availabilityResponse]) => {
-        setAppointments(appointmentsResponse.data);
-        setAvailabilitySlots(availabilityResponse.data);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError('Unable to load advisor appointments right now.');
-      })
-      .finally(() => setLoading(false));
+    const cachedBundle = getCachedAdvisorWorkspaceBundle();
+
+    if (cachedBundle) {
+      applyAdvisorWorkspaceBundle(cachedBundle);
+      setLoading(false);
+      loadAdvisorWorkspace({ forceRefresh: true, background: true });
+      return;
+    }
+
+    loadAdvisorWorkspace();
   }, []);
 
   const appointmentSummary = useMemo(() => {
@@ -192,6 +231,7 @@ export default function AdvisorAppointments() {
         type: 'success',
         text: `Appointment marked as ${status.toLowerCase()}.`,
       });
+      await refreshSharedAdvisorCaches();
     } catch (err) {
       console.error(err);
       setMessage({
@@ -221,6 +261,7 @@ export default function AdvisorAppointments() {
       );
       setAvailabilityForm({ startTime: '', endTime: '' });
       setMessage({ type: 'success', text: 'Availability slot published successfully.' });
+      await refreshSharedAdvisorCaches();
     } catch (err) {
       console.error(err);
       setMessage({
@@ -240,6 +281,7 @@ export default function AdvisorAppointments() {
       await api.delete(`/advisors/advisor-availability/${slotId}`);
       setAvailabilitySlots((currentSlots) => currentSlots.filter((slot) => slot.id !== slotId));
       setMessage({ type: 'success', text: 'Availability slot removed successfully.' });
+      await refreshSharedAdvisorCaches();
     } catch (err) {
       console.error(err);
       setMessage({

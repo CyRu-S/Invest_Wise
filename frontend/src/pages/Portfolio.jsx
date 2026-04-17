@@ -12,6 +12,10 @@ import {
 } from 'lucide-react';
 import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import './PortfolioPage.css';
+import {
+  fetchInvestorBundle,
+  getCachedInvestorBundle,
+} from '../services/appDataCache';
 import api from '../services/api';
 
 function formatCurrency(value, fallback = '₹0') {
@@ -91,29 +95,50 @@ export default function Portfolio() {
   const [transactionCategoryFilter, setTransactionCategoryFilter] = useState('ALL');
   const [transactionSort, setTransactionSort] = useState('latest');
 
-  const loadPortfolio = async () => {
-    setLoading(true);
+  const applyInvestorBundle = (bundle) => {
+    setHoldings(bundle?.holdings || []);
+    setTransactions(bundle?.transactions || []);
+    setProfile(bundle?.profile || null);
+  };
+
+  const loadPortfolio = async ({ forceRefresh = false, background = false } = {}) => {
+    if (!background) {
+      setLoading(true);
+    }
 
     try {
-      const [portfolioResponse, historyResponse, profileResponse] = await Promise.all([
-        api.get('/transactions/portfolio'),
-        api.get('/transactions/history'),
-        api.get('/investor/profile'),
-      ]);
-
-      setHoldings(portfolioResponse.data);
-      setTransactions(historyResponse.data);
-      setProfile(profileResponse.data);
+      const { data } = await fetchInvestorBundle({ forceRefresh });
+      applyInvestorBundle(data);
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      if (!background) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    const cachedBundle = getCachedInvestorBundle();
+
+    if (cachedBundle) {
+      applyInvestorBundle(cachedBundle);
+      setLoading(false);
+      loadPortfolio({ forceRefresh: true, background: true });
+      return;
+    }
+
     loadPortfolio();
   }, []);
+
+  useEffect(() => {
+    const hasOpenModal = Boolean(sellModal) || depositModalOpen;
+    document.body.classList.toggle('modal-open', hasOpenModal);
+
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [depositModalOpen, sellModal]);
 
   const handleSell = async () => {
     if (!sellAmount || Number(sellAmount) <= 0 || !sellModal) return;
@@ -129,7 +154,7 @@ export default function Portfolio() {
       setMessage({ type: 'success', text: response.data.message });
       setSellModal(null);
       setSellAmount('');
-      await loadPortfolio();
+      await loadPortfolio({ forceRefresh: true });
     } catch (error) {
       setMessage({
         type: 'error',
@@ -154,7 +179,7 @@ export default function Portfolio() {
       });
       setDepositModalOpen(false);
       setDepositAmount('');
-      await loadPortfolio();
+      await loadPortfolio({ forceRefresh: true });
       setTab('transactions');
     } catch (error) {
       setMessage({

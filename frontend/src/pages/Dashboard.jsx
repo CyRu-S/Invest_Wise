@@ -28,6 +28,11 @@ import { useAuth } from '../context/AuthContext';
 import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import './DashboardPage.css';
 import api from '../services/api';
+import { readSessionCache, sessionCacheKeys, writeSessionCache } from '../services/sessionCache';
+
+const PUBLIC_FUNDS_TTL_MS = 5 * 60 * 1000;
+const INVESTOR_BUNDLE_TTL_MS = 2 * 60 * 1000;
+const ADMIN_STATS_TTL_MS = 60 * 1000;
 
 function formatCurrency(value) {
   if (value === null || value === undefined || value === '') return '₹2,50,000';
@@ -660,26 +665,79 @@ export default function Dashboard() {
   const [holdings, setHoldings] = useState([]);
 
   useEffect(() => {
-    api.get('/funds/public').then((response) => setFunds(response.data)).catch(() => {});
+    let isActive = true;
+    const cachedFunds = readSessionCache(sessionCacheKeys.publicFunds(), {
+      ttlMs: PUBLIC_FUNDS_TTL_MS,
+    });
 
-    if (hasRole('INVESTOR')) {
-      Promise.all([
-        api.get('/investor/profile'),
-        api.get('/transactions/history'),
-        api.get('/transactions/portfolio'),
-      ])
-        .then(([profileResponse, historyResponse, portfolioResponse]) => {
-          setProfile(profileResponse.data);
-          setTransactions(historyResponse.data);
-          setHoldings(portfolioResponse.data);
+    if (cachedFunds) {
+      setFunds(cachedFunds);
+    } else {
+      api
+        .get('/funds/public')
+        .then((response) => {
+          if (!isActive) return;
+          setFunds(response.data);
+          writeSessionCache(sessionCacheKeys.publicFunds(), response.data);
         })
         .catch(() => {});
     }
 
-    if (hasRole('ADMIN')) {
-      api.get('/admin/stats').then((response) => setStats(response.data)).catch(() => {});
+    if (hasRole('INVESTOR')) {
+      const cachedBundle = readSessionCache(sessionCacheKeys.investorBundle, {
+        ttlMs: INVESTOR_BUNDLE_TTL_MS,
+      });
+
+      if (cachedBundle) {
+        setProfile(cachedBundle.profile || null);
+        setTransactions(cachedBundle.transactions || []);
+        setHoldings(cachedBundle.holdings || []);
+      } else {
+        Promise.all([
+          api.get('/investor/profile'),
+          api.get('/transactions/history'),
+          api.get('/transactions/portfolio'),
+        ])
+          .then(([profileResponse, historyResponse, portfolioResponse]) => {
+            if (!isActive) return;
+
+            const nextBundle = {
+              profile: profileResponse.data,
+              transactions: historyResponse.data,
+              holdings: portfolioResponse.data,
+            };
+
+            setProfile(nextBundle.profile);
+            setTransactions(nextBundle.transactions);
+            setHoldings(nextBundle.holdings);
+            writeSessionCache(sessionCacheKeys.investorBundle, nextBundle);
+          })
+          .catch(() => {});
+      }
     }
 
+    if (hasRole('ADMIN')) {
+      const cachedStats = readSessionCache(sessionCacheKeys.adminStats, {
+        ttlMs: ADMIN_STATS_TTL_MS,
+      });
+
+      if (cachedStats) {
+        setStats(cachedStats);
+      } else {
+        api
+          .get('/admin/stats')
+          .then((response) => {
+            if (!isActive) return;
+            setStats(response.data);
+            writeSessionCache(sessionCacheKeys.adminStats, response.data);
+          })
+          .catch(() => {});
+      }
+    }
+
+    return () => {
+      isActive = false;
+    };
   }, [hasRole]);
 
   const currentRole = useMemo(() => {

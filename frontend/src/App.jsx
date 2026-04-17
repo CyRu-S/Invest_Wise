@@ -19,6 +19,7 @@ import AdvisorProfileDetail from './pages/AdvisorProfileDetail';
 import AdminPanel from './pages/AdminPanel';
 import AnalystDataManagement from './pages/AnalystDataManagement';
 import ClickSpark from './components/ClickSpark';
+import { scheduleRoleSessionPrefetch } from './services/appDataCache';
 
 const THEME_STORAGE_KEY = 'investwise-theme';
 
@@ -55,7 +56,7 @@ function ProtectedRoute({ children, roles, showColdStartNoticeOnAuthRedirect = f
 }
 
 function AppRoutes({ theme, onToggleTheme }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
   const previousPathnameRef = useRef(location.pathname);
   const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
@@ -74,6 +75,11 @@ function AppRoutes({ theme, onToggleTheme }) {
   useEffect(() => {
     previousPathnameRef.current = location.pathname;
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.role) return;
+    scheduleRoleSessionPrefetch(user.role);
+  }, [isAuthenticated, user?.role]);
 
   if (loading) return <div className="loading-spinner" style={{ minHeight: '100vh/*  */' }}><div className="spinner"></div></div>;
 

@@ -15,6 +15,13 @@ import {
   X,
 } from 'lucide-react';
 import SkyToggle from './ui/sky-toggle';
+import { prefetchRouteSessionData } from '../services/appDataCache';
+
+function maskName(name) {
+  if (!name) return '';
+  const visible = name.slice(0, 5);
+  return visible + '*****';
+}
 
 const navItems = {
   common: [
@@ -73,6 +80,10 @@ export default function Navbar({ theme, onToggleTheme }) {
     ...(hasRole('ADMIN') ? navItems.ADMIN : []),
   ];
 
+  const handleLinkWarmup = (path) => {
+    prefetchRouteSessionData(path, user?.role);
+  };
+
   return (
     <nav className="navbar" id="main-navbar">
       <div className="navbar-inner">
@@ -94,6 +105,8 @@ export default function Navbar({ theme, onToggleTheme }) {
                 key={item.name}
                 to={item.path}
                 className={`tubelight-tab${isActive ? ' active' : ''}`}
+                onMouseEnter={() => handleLinkWarmup(item.path)}
+                onFocus={() => handleLinkWarmup(item.path)}
               >
                 <span className="tubelight-tab-text">{item.name}</span>
                 <span className="tubelight-tab-icon">
@@ -130,7 +143,7 @@ export default function Navbar({ theme, onToggleTheme }) {
           />
           <span className="user-badge">{user?.role}</span>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            {user?.fullName}
+            {maskName(user?.fullName)}
           </span>
           <button className="btn btn-ghost btn-sm" onClick={handleLogout} id="logout-btn">
             <LogOut size={14} />
@@ -171,7 +184,7 @@ export default function Navbar({ theme, onToggleTheme }) {
               <div className="navbar-mobile-panel__identity">
                 <span className="user-badge">{user?.role}</span>
                 <div>
-                  <p className="navbar-mobile-panel__name">{user?.fullName}</p>
+                  <p className="navbar-mobile-panel__name">{maskName(user?.fullName)}</p>
                   <p className="navbar-mobile-panel__label">Signed in workspace</p>
                 </div>
               </div>
@@ -187,6 +200,8 @@ export default function Navbar({ theme, onToggleTheme }) {
                     key={item.name}
                     to={item.path}
                     className={`navbar-mobile-link${isActive ? ' active' : ''}`}
+                    onMouseEnter={() => handleLinkWarmup(item.path)}
+                    onFocus={() => handleLinkWarmup(item.path)}
                   >
                     <span className="navbar-mobile-link__icon">
                       <Icon size={17} strokeWidth={2.3} />

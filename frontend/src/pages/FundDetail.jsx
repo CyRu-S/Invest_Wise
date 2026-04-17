@@ -25,6 +25,14 @@ import { MagicBentoCard, MagicBentoGrid } from '../components/MagicBentoGrid';
 import { useAuth } from '../context/AuthContext';
 import './FundPages.css';
 import api from '../services/api';
+import {
+  readSessionCache,
+  removeSessionCache,
+  sessionCacheKeys,
+  writeSessionCache,
+} from '../services/sessionCache';
+
+const FUND_DETAIL_TTL_MS = 5 * 60 * 1000;
 
 function formatCurrency(value, fallback = 'N/A') {
   if (value === null || value === undefined || value === '') return fallback;
@@ -122,11 +130,39 @@ export default function FundDetail() {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
+    let isActive = true;
+    const cacheKey = sessionCacheKeys.fundDetail(id);
+    const cachedFund = readSessionCache(cacheKey, { ttlMs: FUND_DETAIL_TTL_MS });
+
+    if (cachedFund) {
+      setFund(cachedFund);
+      setLoading(false);
+      return () => {
+        isActive = false;
+      };
+    }
+
     api
       .get(`/funds/public/${id}`)
-      .then((response) => setFund(response.data))
-      .catch(() => navigate('/funds'))
-      .finally(() => setLoading(false));
+      .then((response) => {
+        if (!isActive) return;
+        setFund(response.data);
+        writeSessionCache(cacheKey, response.data);
+      })
+      .catch(() => {
+        if (isActive) {
+          navigate('/funds');
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, [id, navigate]);
 
   const handleBuy = async () => {
@@ -149,6 +185,7 @@ export default function FundDetail() {
         fundId: Number(id),
         amount: investmentAmount,
       });
+      removeSessionCache(sessionCacheKeys.investorBundle);
       setMessage({ type: 'success', text: response.data.message });
       setBuyAmount('');
     } catch (error) {
