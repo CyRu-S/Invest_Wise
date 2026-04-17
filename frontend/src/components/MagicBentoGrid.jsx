@@ -49,6 +49,11 @@ function createParticleElement(x, y, glowColor) {
   return particle;
 }
 
+function isLightTheme() {
+  if (typeof document === 'undefined') return false;
+  return document.documentElement.dataset.theme === 'light';
+}
+
 export function MagicBentoGrid({
   children,
   className = '',
@@ -62,32 +67,18 @@ export function MagicBentoGrid({
 
   useEffect(() => {
     if (!enableSpotlight || motionDisabled || !gridRef.current) return undefined;
+    const gridElement = gridRef.current;
 
-    const spotlight = document.createElement('div');
-    spotlight.className = 'magic-bento-spotlight';
-    spotlight.style.background = `radial-gradient(circle, rgba(${glowColor}, 0.18) 0%, rgba(${glowColor}, 0.08) 25%, rgba(${glowColor}, 0.03) 42%, transparent 70%)`;
-    document.body.appendChild(spotlight);
+    const resetCards = () => {
+      const cards = gridElement.querySelectorAll('.magic-bento-card');
+      cards.forEach((card) => {
+        card.style.setProperty('--glow-intensity', '0');
+      });
+    };
 
     const handlePointerMove = (event) => {
-      if (!gridRef.current) return;
+      const cards = gridElement.querySelectorAll('.magic-bento-card');
 
-      const rect = gridRef.current.getBoundingClientRect();
-      const pointerInside =
-        event.clientX >= rect.left &&
-        event.clientX <= rect.right &&
-        event.clientY >= rect.top &&
-        event.clientY <= rect.bottom;
-      const cards = gridRef.current.querySelectorAll('.magic-bento-card');
-
-      if (!pointerInside) {
-        gsap.to(spotlight, { opacity: 0, duration: 0.28, ease: 'power2.out', overwrite: true });
-        cards.forEach((card) => {
-          card.style.setProperty('--glow-intensity', '0');
-        });
-        return;
-      }
-
-      let nearestDistance = Infinity;
       const fullGlowDistance = spotlightRadius * 0.55;
       const fadeDistance = spotlightRadius * 0.95;
 
@@ -108,45 +99,22 @@ export function MagicBentoGrid({
           intensity = (fadeDistance - effectiveDistance) / (fadeDistance - fullGlowDistance);
         }
 
-        nearestDistance = Math.min(nearestDistance, effectiveDistance);
         card.style.setProperty('--glow-x', `${relativeX}%`);
         card.style.setProperty('--glow-y', `${relativeY}%`);
         card.style.setProperty('--glow-radius', `${spotlightRadius}px`);
         card.style.setProperty('--glow-intensity', intensity.toFixed(3));
       });
-
-      const spotlightOpacity =
-        nearestDistance <= fullGlowDistance
-          ? 1
-          : nearestDistance <= fadeDistance
-            ? (fadeDistance - nearestDistance) / (fadeDistance - fullGlowDistance)
-            : 0;
-
-      gsap.to(spotlight, {
-        x: event.clientX,
-        y: event.clientY,
-        opacity: spotlightOpacity * 0.92,
-        duration: 0.16,
-        ease: 'power2.out',
-        overwrite: true,
-      });
     };
 
-    const handlePointerLeave = () => {
-      const cards = gridRef.current?.querySelectorAll('.magic-bento-card') ?? [];
-      cards.forEach((card) => {
-        card.style.setProperty('--glow-intensity', '0');
-      });
-      gsap.to(spotlight, { opacity: 0, duration: 0.28, ease: 'power2.out', overwrite: true });
-    };
+    const handlePointerLeave = () => resetCards();
 
-    document.addEventListener('pointermove', handlePointerMove);
-    document.addEventListener('pointerleave', handlePointerLeave);
+    gridElement.addEventListener('pointermove', handlePointerMove);
+    gridElement.addEventListener('pointerleave', handlePointerLeave);
 
     return () => {
-      document.removeEventListener('pointermove', handlePointerMove);
-      document.removeEventListener('pointerleave', handlePointerLeave);
-      spotlight.remove();
+      gridElement.removeEventListener('pointermove', handlePointerMove);
+      gridElement.removeEventListener('pointerleave', handlePointerLeave);
+      resetCards();
     };
   }, [enableSpotlight, glowColor, motionDisabled, spotlightRadius]);
 
@@ -235,9 +203,15 @@ export function MagicBentoCard({
       }
     };
 
-    const handlePointerEnter = () => {
+    const handlePointerEnter = (event) => {
       isHovered = true;
-      element.style.setProperty('--glow-intensity', '0.55');
+      const rect = element.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      element.style.setProperty('--glow-x', `${(x / rect.width) * 100}%`);
+      element.style.setProperty('--glow-y', `${(y / rect.height) * 100}%`);
+      element.style.setProperty('--glow-intensity', isLightTheme() ? '0.78' : '0.9');
       spawnParticles();
     };
 
@@ -250,7 +224,7 @@ export function MagicBentoCard({
 
       element.style.setProperty('--glow-x', `${(x / rect.width) * 100}%`);
       element.style.setProperty('--glow-y', `${(y / rect.height) * 100}%`);
-      element.style.setProperty('--glow-intensity', '0.65');
+      element.style.setProperty('--glow-intensity', isLightTheme() ? '0.86' : '1');
 
       const animationTarget = {};
 
@@ -309,7 +283,9 @@ export function MagicBentoCard({
       ripple.style.height = `${maxDistance * 2}px`;
       ripple.style.left = `${x - maxDistance}px`;
       ripple.style.top = `${y - maxDistance}px`;
-      ripple.style.background = `radial-gradient(circle, rgba(${glowColor}, 0.28) 0%, rgba(${glowColor}, 0.12) 35%, transparent 72%)`;
+      ripple.style.background = isLightTheme()
+        ? `radial-gradient(circle, rgba(${glowColor}, 0.34) 0%, rgba(${glowColor}, 0.16) 35%, transparent 74%)`
+        : `radial-gradient(circle, rgba(${glowColor}, 0.28) 0%, rgba(${glowColor}, 0.12) 35%, transparent 72%)`;
       element.appendChild(ripple);
 
       gsap.fromTo(

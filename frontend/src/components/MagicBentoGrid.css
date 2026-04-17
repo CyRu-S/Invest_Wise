@@ -4,14 +4,38 @@
   --magic-bento-shadow: 0 24px 80px rgba(4, 8, 20, 0.5);
   --magic-bento-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --magic-bento-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 45%);
+  --magic-bento-card-glow:
+    radial-gradient(
+      circle at var(--glow-x) var(--glow-y),
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.48)) 10%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.24)) 24%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.1)) 46%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.04)) 50%,
+      transparent 74%
+    );
+  --magic-bento-spotlight-blend: screen;
 }
 
 :root[data-theme='light'] {
-  --magic-bento-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.98));
-  --magic-bento-border: rgba(148, 163, 184, 0.2);
-  --magic-bento-shadow: 0 20px 56px rgba(148, 163, 184, 0.18);
-  --magic-bento-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  --magic-bento-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.15) 42%, transparent 60%);
+  --magic-bento-surface:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.99)),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 50%);
+  --magic-bento-border: rgba(148, 163, 184, 0.18);
+  --magic-bento-shadow:
+    0 22px 54px rgba(148, 163, 184, 0.2),
+    0 10px 20px rgba(15, 23, 42, 0.04);
+  --magic-bento-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  --magic-bento-sheen: linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 55%);
+  --magic-bento-card-glow:
+    radial-gradient(
+      circle at var(--glow-x) var(--glow-y),
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.32)) 0%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.16)) 18%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.07)) 34%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.03)) 52%,
+      transparent 70%
+    );
+  --magic-bento-spotlight-blend: normal;
 }
 
 .magic-bento-grid {
@@ -32,7 +56,9 @@
   --glow-x: 50%;
   --glow-y: 50%;
   --glow-intensity: 0;
-  --glow-radius: 280px;
+  --glow-radius: 140px;
+  --card-border-width: 0.5px;
+  --glow-ring-width: 3.5px;
   --bento-surface: var(--magic-bento-surface);
   position: relative;
   display: flex;
@@ -42,7 +68,7 @@
   gap: 1rem;
   overflow: hidden;
   border-radius: 28px;
-  border: 1px solid var(--magic-bento-border);
+  border: var(--card-border-width) solid var(--magic-bento-border);
   background: var(--bento-surface);
   color: var(--text-primary);
   box-shadow:
@@ -51,6 +77,9 @@
   isolation: isolate;
   transform-style: preserve-3d;
   text-decoration: none;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-slow);
 }
 
 .magic-bento-card::before {
@@ -58,25 +87,49 @@
   position: absolute;
   inset: 0;
   background:
+    var(--magic-bento-card-glow),
     radial-gradient(circle at top right, rgba(var(--bento-glow-color), 0.16), transparent 42%),
     var(--magic-bento-sheen);
-  opacity: 0.9;
+  opacity: calc(0.04 + var(--glow-intensity) * 0.88);
+  mix-blend-mode: screen;
+  filter: blur(0px) saturate(1.18) brightness(1.04);
   pointer-events: none;
-  z-index: -2;
+  z-index: 2;
+  transition:
+    opacity 220ms ease,
+    filter 220ms ease;
+}
+
+:root[data-theme='light'] .magic-bento-card::before {
+  mix-blend-mode: normal;
+  filter: blur(0px) saturate(1.08) brightness(1.02);
+}
+
+.magic-bento-card:hover::before,
+.magic-bento-card:focus-visible::before {
+  opacity: calc(0.08 + var(--glow-intensity) * 0.96);
+  filter: blur(0px) saturate(1.24) brightness(1.08);
+}
+
+:root[data-theme='light'] .magic-bento-card:hover::before,
+:root[data-theme='light'] .magic-bento-card:focus-visible::before {
+  filter: blur(0px) saturate(1.12) brightness(1.04);
 }
 
 .magic-bento-card::after {
   content: '';
   position: absolute;
   inset: 0;
-  padding: 1px;
+  padding: var(--glow-ring-width);
   border-radius: inherit;
   background:
     radial-gradient(
       var(--glow-radius) circle at var(--glow-x) var(--glow-y),
-      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.95)) 0%,
-      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.32)) 34%,
-      transparent 70%
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 1.15)) 10%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.72)) 20%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.3)) 42%,
+      rgba(var(--bento-glow-color), calc(var(--glow-intensity) * 0.08)) 58%,
+      transparent 74%
     );
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -86,14 +139,56 @@
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  opacity: 1;
+  opacity: calc(var(--glow-intensity) * 0.92);
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
+  filter: blur(2px) saturate(1.22);
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+
+.magic-bento-card:hover,
+.magic-bento-card:focus-visible {
+  --glow-intensity: 0.72;
+  box-shadow:
+    0 28px 84px rgba(4, 8, 20, 0.58),
+    0 0 0 1px rgba(var(--bento-glow-color), 0.08),
+    0 12px 30px rgba(var(--bento-glow-color), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    var(--magic-bento-highlight);
+}
+
+:root[data-theme='light'] .magic-bento-card:hover,
+:root[data-theme='light'] .magic-bento-card:focus-visible {
+  --glow-intensity: 0.64;
+  box-shadow:
+    0 24px 62px rgba(148, 163, 184, 0.24),
+    0 0 0 1px rgba(var(--bento-glow-color), 0.06),
+    0 10px 24px rgba(var(--bento-glow-color), 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    var(--magic-bento-highlight);
+}
+
+.magic-bento-card:hover::after,
+.magic-bento-card:focus-visible::after {
+  opacity: calc(var(--glow-intensity) * 1.02);
+  filter: blur(3px) saturate(1.28);
+}
+
+:root[data-theme='light'] .magic-bento-card:hover::after,
+:root[data-theme='light'] .magic-bento-card:focus-visible::after {
+  filter: blur(2px) saturate(1.16);
+}
+
+.magic-bento-card::after,
+.magic-bento-card::before {
+  border-radius: inherit;
 }
 
 .magic-bento-card > * {
   position: relative;
-  z-index: 3;
+  z-index: 1;
 }
 
 .magic-bento-card--span-2x2 {
@@ -145,7 +240,7 @@
   pointer-events: none;
   opacity: 0;
   transform: translate(-50%, -50%);
-  mix-blend-mode: screen;
+  mix-blend-mode: var(--magic-bento-spotlight-blend);
   z-index: 40;
 }
 
