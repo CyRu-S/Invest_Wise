@@ -1,25 +1,26 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WebsiteLoader from './components/WebsiteLoader';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import Dashboard from './pages/Dashboard';
-import FundExplorer from './pages/FundExplorer';
-import FundDetail from './pages/FundDetail';
-import RiskProfiler from './pages/RiskProfiler';
-import Portfolio from './pages/Portfolio';
-import AdvisorHub from './pages/AdvisorHub';
-import AdvisorAppointments from './pages/AdvisorAppointments';
-import AdvisorProfileDetail from './pages/AdvisorProfileDetail';
-import AdminPanel from './pages/AdminPanel';
-import AnalystDataManagement from './pages/AnalystDataManagement';
 import ClickSpark from './components/ClickSpark';
 import { scheduleRoleSessionPrefetch } from './services/appDataCache';
+
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const FundExplorer = lazy(() => import('./pages/FundExplorer'));
+const FundDetail = lazy(() => import('./pages/FundDetail'));
+const RiskProfiler = lazy(() => import('./pages/RiskProfiler'));
+const Portfolio = lazy(() => import('./pages/Portfolio'));
+const AdvisorHub = lazy(() => import('./pages/AdvisorHub'));
+const AdvisorAppointments = lazy(() => import('./pages/AdvisorAppointments'));
+const AdvisorProfileDetail = lazy(() => import('./pages/AdvisorProfileDetail'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const AnalystDataManagement = lazy(() => import('./pages/AnalystDataManagement'));
 
 const THEME_STORAGE_KEY = 'investwise-theme';
 
@@ -55,6 +56,14 @@ function ProtectedRoute({ children, roles, showColdStartNoticeOnAuthRedirect = f
   return children;
 }
 
+function RouteFallback() {
+  return (
+    <div className="loading-spinner" style={{ minHeight: '100vh' }}>
+      <div className="spinner"></div>
+    </div>
+  );
+}
+
 function AppRoutes({ theme, onToggleTheme }) {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
@@ -86,28 +95,30 @@ function AppRoutes({ theme, onToggleTheme }) {
   return (
     <div className={`app-shell ${useDoodleBackground ? 'app-shell--doodles' : ''}`}>
       {!isAuthPage && <Navbar theme={theme} onToggleTheme={onToggleTheme} />}
-      <Routes>
-        {/* Public */}
-        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage showColdStartNotice={shouldShowAuthColdStartNotice} />} />
-        <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage showColdStartNotice={shouldShowAuthColdStartNotice} />} />
-        <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/dashboard" /> : <ForgotPasswordPage />} />
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LandingPage />} />
+          <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage showColdStartNotice={shouldShowAuthColdStartNotice} />} />
+          <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage showColdStartNotice={shouldShowAuthColdStartNotice} />} />
+          <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/dashboard" /> : <ForgotPasswordPage />} />
 
-        {/* Protected */}
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/funds" element={<ProtectedRoute showColdStartNoticeOnAuthRedirect={cameFromLandingPage}><FundExplorer /></ProtectedRoute>} />
-        <Route path="/funds/:id" element={<ProtectedRoute><FundDetail /></ProtectedRoute>} />
-        <Route path="/risk-profiler" element={<ProtectedRoute roles={['INVESTOR']}><RiskProfiler /></ProtectedRoute>} />
-        <Route path="/portfolio" element={<ProtectedRoute roles={['INVESTOR']}><Portfolio /></ProtectedRoute>} />
-        <Route path="/advisors" element={<ProtectedRoute roles={['INVESTOR']}><AdvisorHub /></ProtectedRoute>} />
-        <Route path="/advisors/:id" element={<ProtectedRoute roles={['INVESTOR']}><AdvisorProfileDetail /></ProtectedRoute>} />
-        <Route path="/appointments" element={<ProtectedRoute roles={['ADVISOR']}><AdvisorAppointments /></ProtectedRoute>} />
-        <Route path="/data-management" element={<ProtectedRoute roles={['ANALYST', 'ADMIN']}><AnalystDataManagement /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminPanel /></ProtectedRoute>} />
+          {/* Protected */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/funds" element={<ProtectedRoute showColdStartNoticeOnAuthRedirect={cameFromLandingPage}><FundExplorer /></ProtectedRoute>} />
+          <Route path="/funds/:id" element={<ProtectedRoute><FundDetail /></ProtectedRoute>} />
+          <Route path="/risk-profiler" element={<ProtectedRoute roles={['INVESTOR']}><RiskProfiler /></ProtectedRoute>} />
+          <Route path="/portfolio" element={<ProtectedRoute roles={['INVESTOR']}><Portfolio /></ProtectedRoute>} />
+          <Route path="/advisors" element={<ProtectedRoute roles={['INVESTOR']}><AdvisorHub /></ProtectedRoute>} />
+          <Route path="/advisors/:id" element={<ProtectedRoute roles={['INVESTOR']}><AdvisorProfileDetail /></ProtectedRoute>} />
+          <Route path="/appointments" element={<ProtectedRoute roles={['ADVISOR']}><AdvisorAppointments /></ProtectedRoute>} />
+          <Route path="/data-management" element={<ProtectedRoute roles={['ANALYST', 'ADMIN']}><AnalystDataManagement /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminPanel /></ProtectedRoute>} />
 
-        {/* Default */}
-        <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} />} />
-      </Routes>
+          {/* Default */}
+          <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} />} />
+        </Routes>
+      </Suspense>
       {!isAuthPage && <Footer />}
     </div>
   );
@@ -152,7 +163,7 @@ export default function App() {
   };
 
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <ThemeController theme={theme} />
         <ClickSpark sparkColor="#818cf8" sparkSize={12} sparkRadius={20} sparkCount={10} duration={500} />
