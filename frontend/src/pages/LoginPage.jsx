@@ -10,54 +10,17 @@ import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 function GoogleSignInButton({ onSuccess, onError, loading }) {
   return (
     <div className="mx-auto w-full" style={{ maxWidth: '384px' }}>
-      <div className="relative">
-        <button
-          type="button"
-          disabled={loading}
-          className="relative flex w-full items-center justify-center rounded-full border border-white/12 bg-black/35 px-5 py-3 font-medium text-white backdrop-blur-[2px] transition-colors hover:bg-black/45 disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ minHeight: '52px', fontSize: '0.95rem', lineHeight: 1.2 }}
-        >
-          <span
-            aria-hidden="true"
-            className="absolute left-4 flex items-center justify-center rounded-full bg-white"
-            style={{ width: '24px', height: '24px', flexShrink: 0 }}
-          >
-            <svg viewBox="0 0 48 48" role="presentation" focusable="false" style={{ width: '16px', height: '16px' }}>
-              <path
-                fill="#FFC107"
-                d="M43.611 20.083H42V20H24v8h11.303C33.659 32.657 29.24 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.957 3.043l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
-              />
-              <path
-                fill="#FF3D00"
-                d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.957 3.043l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
-              />
-              <path
-                fill="#4CAF50"
-                d="M24 44c5.166 0 9.86-1.977 13.409-5.193l-6.19-5.238C29.472 34.912 26.86 36 24 36c-5.219 0-9.625-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
-              />
-              <path
-                fill="#1976D2"
-                d="M43.611 20.083H42V20H24v8h11.303c-1.104 3.116-3.326 5.534-6.084 6.981l6.19 5.238C39.99 36.08 44 30.595 44 24c0-1.341-.138-2.65-.389-3.917z"
-              />
-            </svg>
-          </span>
-          <span className="block w-full text-center">
-            {loading ? 'Signing in with Google...' : 'Continue with Google'}
-          </span>
-        </button>
-
-        <div className="absolute inset-0 overflow-hidden rounded-full opacity-0">
-          <GoogleLogin
-            onSuccess={onSuccess}
-            onError={onError}
-            useOneTap={false}
-            theme="outline"
-            shape="pill"
-            size="large"
-            width="100%"
-            text="continue_with"
-          />
-        </div>
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={onSuccess}
+          onError={onError}
+          useOneTap={false}
+          theme="filled_black"
+          shape="pill"
+          size="large"
+          text={loading ? 'signin_with' : 'continue_with'}
+          width="384"
+        />
       </div>
     </div>
   );
