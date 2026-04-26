@@ -4,6 +4,8 @@ import api from '../services/api';
 import { getApiErrorMessage } from '../lib/apiErrors';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
+const normalizeVerificationCode = (value) => value.replace(/\D/g, '').slice(0, 6);
+
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState('request');
   const [email, setEmail] = useState('');
@@ -144,8 +146,9 @@ export default function ForgotPasswordPage() {
                 inputMode="numeric"
                 placeholder="6-digit reset code"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => setCode(normalizeVerificationCode(e.target.value))}
                 required
+                maxLength={6}
                 className="w-full rounded-full border border-white/10 bg-transparent px-5 py-3 text-center text-white tracking-[0.35em] backdrop-blur-[1px] placeholder:text-white/30 focus:border-white/30 focus:outline-none"
               />
 

@@ -6,6 +6,8 @@ import { getApiErrorMessage } from '../lib/apiErrors';
 import AuthColdStartNotice from '../components/AuthColdStartNotice';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
+const normalizeVerificationCode = (value) => value.replace(/\D/g, '').slice(0, 6);
+
 export default function RegisterPage({ showColdStartNotice = false }) {
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', fullName: '', role: 'INVESTOR' });
   const [verificationCode, setVerificationCode] = useState('');
@@ -193,8 +195,9 @@ export default function RegisterPage({ showColdStartNotice = false }) {
                 inputMode="numeric"
                 placeholder="6-digit verification code"
                 value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
+                onChange={(e) => setVerificationCode(normalizeVerificationCode(e.target.value))}
                 required
+                maxLength={6}
                 className="w-full rounded-full border border-white/10 bg-transparent px-5 py-3 text-center text-white tracking-[0.35em] backdrop-blur-[1px] placeholder:text-white/30 focus:border-white/30 focus:outline-none"
               />
 

@@ -27,4 +27,12 @@ public class PasswordResetConfirmRequest {
 
     @NotBlank(message = "Confirm password is required")
     private String confirmPassword;
+
+    public void setEmail(String email) {
+        this.email = email == null ? null : email.trim();
+    }
+
+    public void setCode(String code) {
+        this.code = code == null ? null : code.replaceAll("\\D", "");
+    }
 }
