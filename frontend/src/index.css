@@ -437,8 +437,9 @@ footer {
   --app-doodle-pattern:
     linear-gradient(180deg, rgba(6, 10, 20, 0.1), rgba(6, 10, 20, 0.22)),
     url('/background.svg');
-  --app-doodle-pattern-opacity: 0.3;
+  --app-doodle-pattern-opacity: 0.46;
   --app-doodle-blend: screen;
+  --app-doodle-filter: contrast(1.28) saturate(1.18);
 }
 
 :root[data-theme='light'] {
@@ -484,15 +485,16 @@ footer {
   --select-option-bg: #ffffff;
   --select-option-text: #0f172a;
   --app-doodle-overlay:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.16), transparent 32%),
-    radial-gradient(circle at 50% 20%, rgba(129, 140, 248, 0.16), transparent 30%),
-    linear-gradient(180deg, rgba(239, 245, 252, 0.98), rgba(232, 239, 248, 0.97));
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.1), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.08), transparent 32%),
+    radial-gradient(circle at 50% 20%, rgba(129, 140, 248, 0.08), transparent 30%),
+    linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(244, 248, 253, 0.96));
   --app-doodle-pattern:
-    linear-gradient(180deg, rgba(120, 137, 167, 0.1), rgba(120, 137, 167, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.07)),
     url('/background.svg');
-  --app-doodle-pattern-opacity: 0.26;
+  --app-doodle-pattern-opacity: 0.72;
   --app-doodle-blend: multiply;
+  --app-doodle-filter: brightness(0.85) contrast(1.95) saturate(1.55);
 }
 
 /* ================================================
@@ -656,6 +658,7 @@ footer {
     background-position: center, center top;
     opacity: var(--app-doodle-pattern-opacity);
     mix-blend-mode: var(--app-doodle-blend);
+    filter: var(--app-doodle-filter);
   }
 
   .app-shell--doodles > * {
@@ -1032,6 +1035,16 @@ footer {
     display: none;
   }
 
+  :root[data-theme='light'] .navbar-mobile-panel {
+    border-color: rgba(15, 23, 42, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 249, 253, 0.96)),
+      linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 44%);
+    box-shadow:
+      0 22px 52px rgba(15, 23, 42, 0.13),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
   .navbar-mobile-panel__user {
     padding-bottom: 0.85rem;
     border-bottom: 1px solid var(--nav-mobile-panel-border);
@@ -1085,6 +1098,19 @@ footer {
     transform: translateY(-1px);
   }
 
+  :root[data-theme='light'] .navbar-mobile-link {
+    color: #475569;
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(15, 23, 42, 0.08);
+  }
+
+  :root[data-theme='light'] .navbar-mobile-link:hover,
+  :root[data-theme='light'] .navbar-mobile-link.active {
+    color: #111827;
+    background: rgba(99, 102, 241, 0.13);
+    border-color: rgba(99, 102, 241, 0.24);
+  }
+
   .navbar-mobile-link__icon {
     width: 1.9rem;
     height: 1.9rem;
@@ -1095,6 +1121,11 @@ footer {
     background: rgba(99, 102, 241, 0.1);
     color: #c7d2fe;
     flex-shrink: 0;
+  }
+
+  :root[data-theme='light'] .navbar-mobile-link__icon {
+    color: #4f46e5;
+    background: rgba(99, 102, 241, 0.1);
   }
 
   .navbar-mobile-logout {
@@ -1112,6 +1143,13 @@ footer {
     font: inherit;
     font-weight: 600;
     box-shadow: 0 14px 32px rgba(7, 10, 24, 0.2);
+  }
+
+  :root[data-theme='light'] .navbar-mobile-logout {
+    border-color: rgba(220, 38, 38, 0.18);
+    background: rgba(254, 226, 226, 0.82);
+    color: #991b1b;
+    box-shadow: 0 14px 32px rgba(148, 163, 184, 0.16);
   }
 
   .user-badge {

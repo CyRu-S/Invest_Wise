@@ -24,6 +24,28 @@ function GoogleSignInButton({ onSuccess, onError, loading }) {
   );
 }
 
+const LOGIN_CREDENTIAL_ERROR = 'Invalid email or password.';
+const LOGIN_CAPTCHA_ERROR = 'Captcha is wrong. Please try again.';
+
+function getLoginErrorMessage(error) {
+  const message = getApiErrorMessage(error, LOGIN_CREDENTIAL_ERROR);
+  const normalizedMessage = message.toLowerCase();
+
+  if (normalizedMessage.includes('captcha')) {
+    return LOGIN_CAPTCHA_ERROR;
+  }
+
+  if (
+    normalizedMessage.includes('invalid credentials') ||
+    normalizedMessage.includes('invalid email or password') ||
+    normalizedMessage.includes('user not found')
+  ) {
+    return LOGIN_CREDENTIAL_ERROR;
+  }
+
+  return message || LOGIN_CREDENTIAL_ERROR;
+}
+
 export default function LoginPage({ showColdStartNotice = false }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,8 +61,10 @@ export default function LoginPage({ showColdStartNotice = false }) {
     import.meta.env.VITE_GOOGLE_CLIENT_ID ||
     '75114719261-n2f50sgmafqju6739nuo0lggpne51b5a.apps.googleusercontent.com';
 
-  const fetchCaptcha = async () => {
-    setError('');
+  const fetchCaptcha = async ({ clearError = true } = {}) => {
+    if (clearError) {
+      setError('');
+    }
     setCaptchaLoading(true);
     try {
       const res = await api.get('/auth/captcha');
@@ -102,8 +126,8 @@ export default function LoginPage({ showColdStartNotice = false }) {
       login(res.data);
       navigate('/dashboard');
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Login failed'));
-      fetchCaptcha();
+      setError(getLoginErrorMessage(err));
+      fetchCaptcha({ clearError: false });
     } finally {
       setLoading(false);
     }

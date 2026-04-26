@@ -1,8 +1,8 @@
 :root {
   --magic-bento-surface: linear-gradient(180deg, rgba(18, 26, 54, 0.94), rgba(8, 12, 24, 0.98));
-  --magic-bento-border: rgba(148, 163, 184, 0.14);
+  --magic-bento-border: rgba(var(--bento-glow-color), 0.16);
   --magic-bento-shadow: 0 24px 80px rgba(4, 8, 20, 0.5);
-  --magic-bento-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --magic-bento-highlight: none;
   --magic-bento-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 45%);
   --magic-bento-card-glow:
     radial-gradient(
@@ -20,11 +20,11 @@
   --magic-bento-surface:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.99)),
     linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 50%);
-  --magic-bento-border: rgba(148, 163, 184, 0.18);
+  --magic-bento-border: rgba(var(--bento-glow-color), 0.18);
   --magic-bento-shadow:
     0 22px 54px rgba(148, 163, 184, 0.2),
     0 10px 20px rgba(15, 23, 42, 0.04);
-  --magic-bento-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  --magic-bento-highlight: none;
   --magic-bento-sheen: linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 55%);
   --magic-bento-card-glow:
     radial-gradient(
@@ -57,7 +57,7 @@
   --glow-y: 50%;
   --glow-intensity: 0;
   --glow-radius: 140px;
-  --card-border-width: 0.5px;
+  --card-border-width: 1px;
   --glow-ring-width: 3.5px;
   --bento-surface: var(--magic-bento-surface);
   position: relative;
@@ -68,12 +68,10 @@
   gap: 1rem;
   overflow: hidden;
   border-radius: 28px;
-  border: var(--card-border-width) solid var(--magic-bento-border);
+  border: var(--card-border-width) solid rgba(var(--bento-glow-color), calc(0.14 + var(--glow-intensity) * 0.28));
   background: var(--bento-surface);
   color: var(--text-primary);
-  box-shadow:
-    var(--magic-bento-shadow),
-    var(--magic-bento-highlight);
+  box-shadow: var(--magic-bento-shadow);
   isolation: isolate;
   transform-style: preserve-3d;
   text-decoration: none;
@@ -153,10 +151,8 @@
   --glow-intensity: 0.72;
   box-shadow:
     0 28px 84px rgba(4, 8, 20, 0.58),
-    0 0 0 1px rgba(var(--bento-glow-color), 0.08),
-    0 12px 30px rgba(var(--bento-glow-color), 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    var(--magic-bento-highlight);
+    0 0 0 1px rgba(var(--bento-glow-color), 0.2),
+    0 12px 30px rgba(var(--bento-glow-color), 0.12);
 }
 
 :root[data-theme='light'] .magic-bento-card:hover,
@@ -164,10 +160,8 @@
   --glow-intensity: 0.64;
   box-shadow:
     0 24px 62px rgba(148, 163, 184, 0.24),
-    0 0 0 1px rgba(var(--bento-glow-color), 0.06),
-    0 10px 24px rgba(var(--bento-glow-color), 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    var(--magic-bento-highlight);
+    0 0 0 1px rgba(var(--bento-glow-color), 0.22),
+    0 10px 24px rgba(var(--bento-glow-color), 0.12);
 }
 
 .magic-bento-card:hover::after,

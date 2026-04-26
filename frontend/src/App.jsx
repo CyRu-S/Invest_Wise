@@ -113,6 +113,20 @@ function AppRoutes({ theme, onToggleTheme }) {
   );
 }
 
+function ThemeController({ theme }) {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const isPublicLandingPage = location.pathname === '/' && !isAuthenticated;
+  const effectiveTheme = isPublicLandingPage ? 'dark' : theme;
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = effectiveTheme;
+    document.documentElement.style.colorScheme = effectiveTheme;
+  }, [effectiveTheme]);
+
+  return null;
+}
+
 export default function App() {
   const [theme, setTheme] = useState(getInitialTheme);
   const [showLoader, setShowLoader] = useState(() => {
@@ -121,8 +135,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme;
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
@@ -140,6 +152,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ThemeController theme={theme} />
         <ClickSpark sparkColor="#818cf8" sparkSize={12} sparkRadius={20} sparkCount={10} duration={500} />
         {showLoader && <WebsiteLoader onFinished={handleLoaderFinished} />}
         <AppRoutes theme={theme} onToggleTheme={handleToggleTheme} />

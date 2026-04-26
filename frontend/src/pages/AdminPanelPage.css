@@ -260,6 +260,7 @@
 .admin-panel-invite {
   display: grid;
   gap: 1rem;
+  box-shadow: none;
 }
 
 .admin-panel-invite__copy h2,
@@ -337,6 +338,10 @@
   background: var(--admin-panel-field-bg);
   padding: 0.95rem 1rem;
   box-shadow: 0 18px 60px rgba(5, 10, 24, 0.2);
+}
+
+.admin-panel-invite .admin-panel-field {
+  box-shadow: none;
 }
 
 .admin-panel-field svg {
