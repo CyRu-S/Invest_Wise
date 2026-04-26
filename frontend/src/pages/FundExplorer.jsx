@@ -53,7 +53,16 @@ export default function FundExplorer() {
   const [category, setCategory] = useState('');
   const [maxRisk, setMaxRisk] = useState('');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   useEffect(() => {
     let isActive = true;
@@ -62,6 +71,8 @@ export default function FundExplorer() {
       const params = {};
       if (category) params.category = category;
       if (maxRisk) params.maxRisk = maxRisk;
+      if (debouncedSearch) params.query = debouncedSearch;
+      params.limit = 24;
 
       const cacheKey = sessionCacheKeys.publicFunds(params);
       const cachedFunds = readSessionCache(cacheKey, { ttlMs: PUBLIC_FUNDS_TTL_MS });
@@ -74,7 +85,7 @@ export default function FundExplorer() {
 
       setLoading(true);
       try {
-        const response = await api.get('/funds/public', { params });
+        const response = await api.get('/mf/all', { params });
         if (!isActive) return;
         setFunds(response.data);
         writeSessionCache(cacheKey, response.data);
@@ -92,19 +103,14 @@ export default function FundExplorer() {
     return () => {
       isActive = false;
     };
-  }, [category, maxRisk]);
+  }, [category, debouncedSearch, maxRisk]);
 
-  const filteredFunds = funds.filter((fund) => {
-    const query = search.toLowerCase();
-    return (
-      fund.fundName.toLowerCase().includes(query) ||
-      fund.tickerSymbol.toLowerCase().includes(query)
-    );
-  });
+  const filteredFunds = funds;
 
   const categoryCount = new Set(filteredFunds.map((fund) => fund.category).filter(Boolean)).size;
-  const averageOneYearReturn = filteredFunds.length
-    ? filteredFunds.reduce((sum, fund) => sum + Number(fund.oneYearReturn || 0), 0) / filteredFunds.length
+  const fundsWithReturn = filteredFunds.filter((fund) => fund.oneYearReturn !== null && fund.oneYearReturn !== undefined);
+  const averageOneYearReturn = fundsWithReturn.length
+    ? fundsWithReturn.reduce((sum, fund) => sum + Number(fund.oneYearReturn || 0), 0) / fundsWithReturn.length
     : null;
   const lowestInvestment = filteredFunds.reduce((lowest, fund) => {
     const investment = Number(fund.minInvestment || 0);
@@ -113,6 +119,7 @@ export default function FundExplorer() {
     return Math.min(lowest, investment);
   }, 0);
   const topPerformer = filteredFunds.reduce((best, fund) => {
+    if (fund.oneYearReturn === null || fund.oneYearReturn === undefined) return best;
     if (!best) return fund;
     return Number(fund.oneYearReturn || 0) > Number(best.oneYearReturn || 0) ? fund : best;
   }, null);
@@ -157,7 +164,7 @@ export default function FundExplorer() {
           </div>
           <div className="fund-hero__stat fund-hero__stat--spotlight">
             <span className="fund-hero__stat-label">Top momentum</span>
-            <strong>{topPerformer ? topPerformer.tickerSymbol : 'Waiting for data'}</strong>
+            <strong>{topPerformer ? topPerformer.tickerSymbol || topPerformer.schemeCode : 'Waiting for data'}</strong>
             <span className="fund-hero__stat-note">
               {topPerformer ? formatReturn(topPerformer.oneYearReturn) : 'No standout yet'}
             </span>
@@ -172,7 +179,7 @@ export default function FundExplorer() {
             id="fund-search"
             type="text"
             className="fund-field__input"
-            placeholder="Search by fund name or ticker"
+            placeholder="Search by fund name or scheme code"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -194,6 +201,7 @@ export default function FundExplorer() {
             <option value="DEBT">Debt</option>
             <option value="HYBRID">Hybrid</option>
             <option value="ELSS">ELSS</option>
+            <option value="OTHER">Other</option>
           </select>
         </label>
 
@@ -241,8 +249,8 @@ export default function FundExplorer() {
               return (
                 <MagicBentoCard
                   as={Link}
-                  to={`/funds/${fund.id}`}
-                  key={fund.id}
+                  to={`/funds/${fund.schemeCode || fund.id}`}
+                  key={fund.schemeCode || fund.id}
                   className={`fund-bento-card fund-bento-card--${fund.category}`}
                 >
                   <div className="fund-bento-card__top">
@@ -254,9 +262,11 @@ export default function FundExplorer() {
 
                   <div className="fund-bento-card__main">
                     <div className="fund-bento-card__title-block">
-                      <p className="fund-bento-card__ticker">{fund.tickerSymbol}</p>
+                      <p className="fund-bento-card__ticker">{fund.tickerSymbol || fund.schemeCode}</p>
                       <h3>{fund.fundName}</h3>
-                      <p className="fund-bento-card__manager">{fund.fundManager || 'Managed by the house team'}</p>
+                      <p className="fund-bento-card__manager">
+                        {fund.fundManager || fund.fundHouse || 'MFAPI tracked fund'}
+                      </p>
                     </div>
 
                     <div className="fund-bento-card__scoreboard">
@@ -272,7 +282,7 @@ export default function FundExplorer() {
                           <TrendingUp size={14} />
                           1Y return
                         </span>
-                        <strong className={Number(fund.oneYearReturn) >= 0 ? 'is-positive' : 'is-negative'}>
+                        <strong className={fund.oneYearReturn === null || fund.oneYearReturn === undefined ? '' : Number(fund.oneYearReturn) >= 0 ? 'is-positive' : 'is-negative'}>
                           {formatReturn(fund.oneYearReturn)}
                         </strong>
                       </div>

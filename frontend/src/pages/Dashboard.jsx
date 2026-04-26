@@ -478,7 +478,7 @@ function AdvisorDashboard({ user, funds, topPerformer, categoryCount }) {
         summaryItems={[
           { label: 'Role', value: 'Financial advisor', tone: 'indigo' },
           { label: 'Tracked funds', value: funds.length, tone: 'violet', note: `${categoryCount} categories` },
-          { label: 'Top momentum', value: topPerformer?.tickerSymbol || 'Waiting', tone: 'emerald' },
+          { label: 'Top momentum', value: topPerformer?.tickerSymbol || topPerformer?.schemeCode || 'Waiting', tone: 'emerald' },
           { label: 'Client tools', value: 'Research ready', tone: 'amber' },
         ]}
       />
@@ -515,7 +515,7 @@ function AdvisorDashboard({ user, funds, topPerformer, categoryCount }) {
           <div className="dashboard-bento__metrics">
             <DashboardMetricTile label="Tracked funds" value={funds.length} tone="indigo" />
             <DashboardMetricTile label="Categories" value={categoryCount} tone="violet" />
-            <DashboardMetricTile label="Best momentum" value={topPerformer?.tickerSymbol || 'N/A'} tone="emerald" />
+            <DashboardMetricTile label="Best momentum" value={topPerformer?.tickerSymbol || topPerformer?.schemeCode || 'N/A'} tone="emerald" />
             <DashboardMetricTile label="Workflow" value="Research first" tone="amber" />
           </div>
           <div className="dashboard-bento__cta-row">
@@ -538,7 +538,7 @@ function AnalystDashboard({ user, funds, topPerformer, categoryCount }) {
         summaryItems={[
           { label: 'Total funds', value: funds.length, tone: 'indigo' },
           { label: 'Categories tracked', value: categoryCount, tone: 'violet' },
-          { label: 'Top performer', value: topPerformer?.tickerSymbol || 'Waiting', tone: 'emerald' },
+          { label: 'Top performer', value: topPerformer?.tickerSymbol || topPerformer?.schemeCode || 'Waiting', tone: 'emerald' },
           { label: 'Research mode', value: 'Active', tone: 'amber' },
         ]}
       />
@@ -575,7 +575,7 @@ function AnalystDashboard({ user, funds, topPerformer, categoryCount }) {
           <div className="dashboard-bento__metrics">
             <DashboardMetricTile label="Universe" value={`${funds.length} funds`} tone="indigo" />
             <DashboardMetricTile label="Categories" value={`${categoryCount} tracked`} tone="violet" />
-            <DashboardMetricTile label="Momentum lead" value={topPerformer?.tickerSymbol || 'N/A'} tone="emerald" />
+            <DashboardMetricTile label="Momentum lead" value={topPerformer?.tickerSymbol || topPerformer?.schemeCode || 'N/A'} tone="emerald" />
             <DashboardMetricTile label="Data state" value="Pipeline active" tone="amber" />
           </div>
           <div className="dashboard-bento__cta-row">
@@ -666,7 +666,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     let isActive = true;
-    const cachedFunds = readSessionCache(sessionCacheKeys.publicFunds(), {
+    const publicFundParams = { limit: 24 };
+    const cachedFunds = readSessionCache(sessionCacheKeys.publicFunds(publicFundParams), {
       ttlMs: PUBLIC_FUNDS_TTL_MS,
     });
 
@@ -674,11 +675,11 @@ export default function Dashboard() {
       setFunds(cachedFunds);
     } else {
       api
-        .get('/funds/public')
+        .get('/mf/all', { params: { limit: 24 } })
         .then((response) => {
           if (!isActive) return;
           setFunds(response.data);
-          writeSessionCache(sessionCacheKeys.publicFunds(), response.data);
+          writeSessionCache(sessionCacheKeys.publicFunds(publicFundParams), response.data);
         })
         .catch(() => {});
     }
@@ -750,6 +751,7 @@ export default function Dashboard() {
 
   const categoryCount = new Set(funds.map((fund) => fund.category).filter(Boolean)).size;
   const topPerformer = funds.reduce((best, fund) => {
+    if (fund.oneYearReturn === null || fund.oneYearReturn === undefined) return best;
     if (!best) return fund;
     return Number(fund.oneYearReturn || 0) > Number(best.oneYearReturn || 0) ? fund : best;
   }, null);

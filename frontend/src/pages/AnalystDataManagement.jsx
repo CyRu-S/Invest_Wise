@@ -15,7 +15,7 @@ import {
 import api from '../services/api';
 import './AnalystDataManagement.css';
 
-const CATEGORY_OPTIONS = ['EQUITY', 'DEBT', 'HYBRID', 'ELSS'];
+const CATEGORY_OPTIONS = ['EQUITY', 'DEBT', 'HYBRID', 'ELSS', 'OTHER'];
 
 const EMPTY_FORM = {
   fundName: '',

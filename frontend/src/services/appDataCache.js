@@ -49,7 +49,12 @@ export async function fetchPublicFunds(params = {}, options = {}) {
     sessionCacheKeys.publicFunds(params),
     SESSION_CACHE_TTLS.publicFunds,
     async () => {
-      const response = await api.get('/funds/public', { params });
+      const response = await api.get('/mf/all', {
+        params: {
+          limit: 24,
+          ...params,
+        },
+      });
       return response.data;
     },
     options

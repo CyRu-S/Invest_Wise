@@ -143,7 +143,7 @@ export default function FundDetail() {
     }
 
     api
-      .get(`/funds/public/${id}`)
+      .get(`/mf/${id}`)
       .then((response) => {
         if (!isActive) return;
         setFund(response.data);
@@ -182,7 +182,7 @@ export default function FundDetail() {
 
     try {
       const response = await api.post('/transactions/buy', {
-        fundId: Number(id),
+        fundId: Number(fund.localFundId || fund.id),
         amount: investmentAmount,
       });
       removeSessionCache(sessionCacheKeys.investorBundle);
@@ -228,8 +228,8 @@ export default function FundDetail() {
   const minimumInvestment = Number(fund.minInvestment || 0);
   const belowMinimum = minimumInvestment && investmentAmount > 0 && investmentAmount < minimumInvestment;
   const isInvestor = hasRole('INVESTOR');
-  const chartGradientId = `fund-chart-fill-${fund.id}`;
-  const chartStrokeId = `fund-chart-stroke-${fund.id}`;
+  const chartGradientId = `fund-chart-fill-${fund.schemeCode || fund.id}`;
+  const chartStrokeId = `fund-chart-stroke-${fund.schemeCode || fund.id}`;
   const quickAmounts = [5000, 10000, 25000];
 
   return (
@@ -253,8 +253,8 @@ export default function FundDetail() {
           <h1>{fund.fundName}</h1>
           <p>{fund.description || 'A diversified mutual fund strategy built for disciplined long-term investing.'}</p>
           <div className="fund-hero__chips">
-            <span className="fund-chip">Ticker {fund.tickerSymbol}</span>
-            <span className="fund-chip">Managed by {fund.fundManager || 'In-house team'}</span>
+            <span className="fund-chip">Code {fund.schemeCode || fund.tickerSymbol}</span>
+            <span className="fund-chip">Managed by {fund.fundManager || fund.fundHouse || 'Fund house data unavailable'}</span>
           </div>
         </div>
 
@@ -293,7 +293,7 @@ export default function FundDetail() {
               <Sparkles size={15} />
               Fund snapshot
             </span>
-            <span className="fund-detail-card__ticker">{fund.tickerSymbol}</span>
+            <span className="fund-detail-card__ticker">{fund.tickerSymbol || fund.schemeCode}</span>
           </div>
 
           <div className="fund-detail-card__headline">
@@ -313,7 +313,7 @@ export default function FundDetail() {
           <div className="fund-detail-card__overview-grid">
             <div>
               <span className="fund-detail-card__label">Manager</span>
-              <strong>{fund.fundManager || 'In-house team'}</strong>
+              <strong>{fund.fundManager || fund.fundHouse || 'Unavailable'}</strong>
             </div>
             <div>
               <span className="fund-detail-card__label">Risk outlook</span>
@@ -401,7 +401,7 @@ export default function FundDetail() {
           <div className="fund-detail-card__stack">
             <div>
               <span className="fund-detail-card__label">Ticker</span>
-              <strong>{fund.tickerSymbol}</strong>
+              <strong>{fund.tickerSymbol || fund.schemeCode}</strong>
             </div>
             <div>
               <span className="fund-detail-card__label">Category</span>
@@ -409,7 +409,7 @@ export default function FundDetail() {
             </div>
             <div>
               <span className="fund-detail-card__label">Manager</span>
-              <strong>{fund.fundManager || 'In-house team'}</strong>
+              <strong>{fund.fundManager || fund.fundHouse || 'Unavailable'}</strong>
             </div>
             <div>
               <span className="fund-detail-card__label">Expense ratio</span>
@@ -562,7 +562,7 @@ export default function FundDetail() {
             <button
               className="btn btn-success btn-lg fund-invest__button"
               onClick={handleBuy}
-              disabled={!investmentAmount || investmentAmount <= 0 || belowMinimum}
+              disabled={!fund.localFundId || !investmentAmount || investmentAmount <= 0 || belowMinimum}
             >
               Invest in Fund
               <ArrowUpRight size={16} />
