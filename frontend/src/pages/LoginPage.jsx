@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
@@ -8,8 +8,45 @@ import AuthColdStartNotice from '../components/AuthColdStartNotice';
 import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
 function GoogleSignInButton({ onSuccess, onError, loading }) {
+  const shellRef = useRef(null);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return undefined;
+
+    const normalizeGoogleWrapper = () => {
+      const iframe = shell.querySelector('iframe');
+      if (!iframe) return;
+
+      let current = iframe.parentElement;
+
+      while (current && current !== shell) {
+        current.style.background = 'transparent';
+        current.style.backgroundColor = 'transparent';
+        current.style.border = '0';
+        current.style.boxShadow = 'none';
+        current.style.borderRadius = '9999px';
+        current = current.parentElement;
+      }
+    };
+
+    normalizeGoogleWrapper();
+
+    const observer = new MutationObserver(() => {
+      normalizeGoogleWrapper();
+    });
+
+    observer.observe(shell, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="mx-auto w-full" style={{ maxWidth: '384px' }}>
+    <div ref={shellRef} className="mx-auto w-full" style={{ maxWidth: '384px' }}>
       <div className="flex justify-center">
         <GoogleLogin
           onSuccess={onSuccess}
