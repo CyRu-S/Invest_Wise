@@ -1472,6 +1472,29 @@ footer {
     border-color: var(--border-glass-hover);
   }
 
+  #login-page .google-login-shell {
+    display: flex;
+    justify-content: center;
+  }
+
+  #login-page .google-login-shell > div {
+    background: transparent !important;
+  }
+
+  #login-page .google-login-shell [class*="nsm7Bb-HzV7m-LgbsSe"] {
+    border-radius: 9999px !important;
+    box-shadow: none !important;
+  }
+
+  #login-page .google-login-shell [class*="nsm7Bb-HzV7m-LgbsSe-Bz112c"] {
+    background: #232428 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  #login-page .google-login-shell iframe {
+    color-scheme: dark;
+  }
+
   /* ================================================
    Risk Profiler
    ================================================ */
