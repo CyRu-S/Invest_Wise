@@ -117,7 +117,9 @@ function ThemeController({ theme }) {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const isPublicLandingPage = location.pathname === '/' && !isAuthenticated;
-  const effectiveTheme = isPublicLandingPage ? 'dark' : theme;
+  const isPublicAuthPage =
+    !isAuthenticated && ['/login', '/register', '/forgot-password'].includes(location.pathname);
+  const effectiveTheme = isPublicLandingPage || isPublicAuthPage ? 'dark' : theme;
 
   useEffect(() => {
     document.documentElement.dataset.theme = effectiveTheme;

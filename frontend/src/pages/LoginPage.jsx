@@ -9,7 +9,7 @@ import { CanvasRevealEffect } from '../components/ui/sign-in-flow-1';
 
 function GoogleSignInButton({ onSuccess, onError, loading }) {
   return (
-    <div className="google-login-shell mx-auto w-full" style={{ maxWidth: '384px' }}>
+    <div className="mx-auto w-full" style={{ maxWidth: '384px' }}>
       <div className="flex justify-center">
         <GoogleLogin
           onSuccess={onSuccess}
