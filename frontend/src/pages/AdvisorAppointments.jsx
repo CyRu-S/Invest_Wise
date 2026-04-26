@@ -18,7 +18,6 @@ import api from '../services/api';
 import {
   fetchAdvisorHubBundle,
   fetchAdvisorWorkspaceBundle,
-  fetchInvestorBundle,
   getCachedAdvisorWorkspaceBundle,
 } from '../services/appDataCache';
 import { clearSessionCacheByPrefix } from '../services/sessionCache';
@@ -143,7 +142,6 @@ export default function AdvisorAppointments() {
     await Promise.allSettled([
       fetchAdvisorWorkspaceBundle({ forceRefresh: true }),
       fetchAdvisorHubBundle({ forceRefresh: true }),
-      fetchInvestorBundle({ forceRefresh: true }),
     ]);
   };
 

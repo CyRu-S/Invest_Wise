@@ -16,7 +16,6 @@ import api from '../services/api';
 import {
   fetchAdvisorDetailBundle,
   fetchAdvisorHubBundle,
-  fetchAdvisorWorkspaceBundle,
   fetchInvestorBundle,
   getCachedAdvisorDetailBundle,
 } from '../services/appDataCache';
@@ -169,7 +168,6 @@ export default function AdvisorProfileDetail() {
         fetchAdvisorDetailBundle(id, { forceRefresh: true }),
         fetchInvestorBundle({ forceRefresh: true }),
         fetchAdvisorHubBundle({ forceRefresh: true }),
-        fetchAdvisorWorkspaceBundle({ forceRefresh: true }),
       ]);
 
       applyAdvisorBundle(advisorBundle);

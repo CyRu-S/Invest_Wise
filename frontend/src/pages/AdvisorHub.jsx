@@ -21,7 +21,6 @@ import {
   fetchAdvisorAvailability,
   fetchAdvisorDetailBundle,
   fetchAdvisorHubBundle,
-  fetchAdvisorWorkspaceBundle,
   fetchInvestorBundle,
   getCachedAdvisorAvailability,
   getCachedAdvisorHubBundle,
@@ -137,7 +136,6 @@ export default function AdvisorHub() {
     await Promise.allSettled([
       fetchAdvisorHubBundle({ forceRefresh: true }),
       fetchInvestorBundle({ forceRefresh: true }),
-      fetchAdvisorWorkspaceBundle({ forceRefresh: true }),
       advisorId ? fetchAdvisorAvailability(advisorId, { forceRefresh: true }) : Promise.resolve(),
       advisorId ? fetchAdvisorDetailBundle(advisorId, { forceRefresh: true }) : Promise.resolve(),
     ]);
