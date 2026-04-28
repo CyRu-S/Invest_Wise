@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/funds/public/**").permitAll()
                         .requestMatchers("/api/mf/**").permitAll()
                         .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
