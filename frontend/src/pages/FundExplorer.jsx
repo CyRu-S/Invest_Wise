@@ -91,6 +91,33 @@ export default function FundExplorer() {
         writeSessionCache(cacheKey, response.data);
       } catch (error) {
         console.error('Failed to fetch funds:', error);
+        try {
+          const fallbackParams = {};
+          if (category) fallbackParams.category = category;
+          if (maxRisk) fallbackParams.maxRisk = maxRisk;
+
+          const fallbackResponse = await api.get('/funds/public', { params: fallbackParams });
+          if (!isActive) return;
+
+          const normalizedSearch = debouncedSearch.toLowerCase();
+          const fallbackFunds = normalizedSearch
+            ? fallbackResponse.data.filter((fund) => {
+                const name = fund.fundName?.toLowerCase() || '';
+                const ticker = fund.tickerSymbol?.toLowerCase() || '';
+                const schemeCode = fund.schemeCode?.toLowerCase() || '';
+                return (
+                  name.includes(normalizedSearch) ||
+                  ticker.includes(normalizedSearch) ||
+                  schemeCode.includes(normalizedSearch)
+                );
+              })
+            : fallbackResponse.data;
+
+          setFunds(fallbackFunds);
+          writeSessionCache(cacheKey, fallbackFunds);
+        } catch (fallbackError) {
+          console.error('Failed to fetch fallback funds:', fallbackError);
+        }
       } finally {
         if (isActive) {
           setLoading(false);

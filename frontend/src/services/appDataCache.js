@@ -49,13 +49,37 @@ export async function fetchPublicFunds(params = {}, options = {}) {
     sessionCacheKeys.publicFunds(params),
     SESSION_CACHE_TTLS.publicFunds,
     async () => {
-      const response = await api.get('/mf/all', {
-        params: {
-          limit: 24,
-          ...params,
-        },
-      });
-      return response.data;
+      try {
+        const response = await api.get('/mf/all', {
+          params: {
+            limit: 24,
+            ...params,
+          },
+        });
+        return response.data;
+      } catch (error) {
+        const fallbackParams = {};
+        if (params.category) fallbackParams.category = params.category;
+        if (params.maxRisk) fallbackParams.maxRisk = params.maxRisk;
+
+        const response = await api.get('/funds/public', { params: fallbackParams });
+        const normalizedQuery = params.query?.trim().toLowerCase();
+
+        if (!normalizedQuery) {
+          return response.data;
+        }
+
+        return response.data.filter((fund) => {
+          const name = fund.fundName?.toLowerCase() || '';
+          const ticker = fund.tickerSymbol?.toLowerCase() || '';
+          const schemeCode = fund.schemeCode?.toLowerCase() || '';
+          return (
+            name.includes(normalizedQuery) ||
+            ticker.includes(normalizedQuery) ||
+            schemeCode.includes(normalizedQuery)
+          );
+        });
+      }
     },
     options
   );
