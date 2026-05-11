@@ -99,14 +99,25 @@ export async function fetchAdvisorHubBundle(options = {}) {
     sessionCacheKeys.advisorHubBundle,
     SESSION_CACHE_TTLS.advisorHubBundle,
     async () => {
-      const [advisorsResponse, appointmentsResponse] = await Promise.all([
+      const existingBundle = readSessionCache(sessionCacheKeys.advisorHubBundle, {
+        ttlMs: SESSION_CACHE_TTLS.advisorHubBundle,
+      });
+      const [advisorsResponse, appointmentsResponse] = await Promise.allSettled([
         api.get('/advisors'),
         api.get('/advisors/appointments'),
       ]);
 
+      if (advisorsResponse.status === 'rejected' && appointmentsResponse.status === 'rejected') {
+        throw advisorsResponse.reason || appointmentsResponse.reason;
+      }
+
       return {
-        advisors: advisorsResponse.data,
-        appointments: appointmentsResponse.data,
+        advisors: advisorsResponse.status === 'fulfilled'
+          ? advisorsResponse.value.data
+          : (existingBundle?.advisors || []),
+        appointments: appointmentsResponse.status === 'fulfilled'
+          ? appointmentsResponse.value.data
+          : (existingBundle?.appointments || []),
       };
     },
     options
@@ -167,14 +178,25 @@ export async function fetchAdvisorWorkspaceBundle(options = {}) {
     sessionCacheKeys.advisorWorkspaceBundle,
     SESSION_CACHE_TTLS.advisorWorkspaceBundle,
     async () => {
-      const [appointmentsResponse, availabilityResponse] = await Promise.all([
+      const existingBundle = readSessionCache(sessionCacheKeys.advisorWorkspaceBundle, {
+        ttlMs: SESSION_CACHE_TTLS.advisorWorkspaceBundle,
+      });
+      const [appointmentsResponse, availabilityResponse] = await Promise.allSettled([
         api.get('/advisors/advisor-appointments'),
         api.get('/advisors/advisor-availability'),
       ]);
 
+      if (appointmentsResponse.status === 'rejected' && availabilityResponse.status === 'rejected') {
+        throw appointmentsResponse.reason || availabilityResponse.reason;
+      }
+
       return {
-        appointments: appointmentsResponse.data,
-        availabilitySlots: availabilityResponse.data,
+        appointments: appointmentsResponse.status === 'fulfilled'
+          ? appointmentsResponse.value.data
+          : (existingBundle?.appointments || []),
+        availabilitySlots: availabilityResponse.status === 'fulfilled'
+          ? availabilityResponse.value.data
+          : (existingBundle?.availabilitySlots || []),
       };
     },
     options

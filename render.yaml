@@ -8,9 +8,23 @@ services:
     plan: free
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: render,mysql
+        value: render,supabase
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
         value: https://invest-wise-nine.vercel.app,https://invest-wise.vercel.app,http://localhost:5173
+      - key: SUPABASE_DB_HOST
+        value: aws-1-ap-south-1.pooler.supabase.com
+      - key: SUPABASE_DB_PORT
+        value: 5432
+      - key: SUPABASE_DB_NAME
+        value: postgres
+      - key: SUPABASE_DB_USER
+        value: postgres.djroavksvmoahgpcxtfk
+      - key: SUPABASE_DB_PASSWORD
+        sync: false
+      - key: SUPABASE_DB_SSLMODE
+        value: require
+      - key: DB_POOL_MAX_SIZE
+        value: 5
     healthCheckPath: /api/health

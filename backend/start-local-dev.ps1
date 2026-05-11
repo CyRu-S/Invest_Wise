@@ -34,6 +34,16 @@ if ($activeProfiles -contains "mysql") {
     )
 }
 
+if ($activeProfiles -contains "supabase") {
+    $requiredVars += @(
+        "SUPABASE_DB_HOST",
+        "SUPABASE_DB_PORT",
+        "SUPABASE_DB_NAME",
+        "SUPABASE_DB_USER",
+        "SUPABASE_DB_PASSWORD"
+    )
+}
+
 foreach ($varName in $requiredVars) {
     $envItem = Get-Item "Env:$varName" -ErrorAction SilentlyContinue
     if (-not $envItem -or -not $envItem.Value) {
@@ -45,6 +55,8 @@ foreach ($varName in $requiredVars) {
 Write-Host "Starting backend with profile: $env:SPRING_PROFILES_ACTIVE" -ForegroundColor Green
 if ($activeProfiles -contains "mysql") {
     Write-Host "MySQL target: $($env:MYSQL_HOST):$($env:MYSQL_PORT)/$($env:MYSQL_DB)" -ForegroundColor Green
+} elseif ($activeProfiles -contains "supabase") {
+    Write-Host "Supabase PostgreSQL target: $($env:SUPABASE_DB_HOST):$($env:SUPABASE_DB_PORT)/$($env:SUPABASE_DB_NAME)" -ForegroundColor Green
 } else {
     Write-Host "Using the default local H2 database on port 8080." -ForegroundColor Green
 }

@@ -19,6 +19,7 @@ import {
   fetchInvestorBundle,
   getCachedAdvisorDetailBundle,
 } from '../services/appDataCache';
+import { clearSessionCacheByPrefix, removeSessionCache, sessionCacheKeys } from '../services/sessionCache';
 import './PortfolioPage.css';
 import './AdvisorRiskPages.css';
 
@@ -164,13 +165,20 @@ export default function AdvisorProfileDetail() {
 
     try {
       const response = await api.post(`/advisors/${id}/book`, payload);
-      const [{ data: advisorBundle }] = await Promise.all([
+      clearSessionCacheByPrefix('advisor:');
+      clearSessionCacheByPrefix('investor:');
+
+      const [advisorBundleResult] = await Promise.allSettled([
         fetchAdvisorDetailBundle(id, { forceRefresh: true }),
         fetchInvestorBundle({ forceRefresh: true }),
         fetchAdvisorHubBundle({ forceRefresh: true }),
       ]);
 
-      applyAdvisorBundle(advisorBundle);
+      if (advisorBundleResult.status === 'fulfilled') {
+        applyAdvisorBundle(advisorBundleResult.value.data);
+      }
+
+      removeSessionCache(sessionCacheKeys.advisorHubBundle);
       setMessage({
         type: 'success',
         text: response.data?.message || 'Appointment booked successfully.',

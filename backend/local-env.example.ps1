@@ -1,13 +1,15 @@
-$env:SPRING_PROFILES_ACTIVE = "render,mysql"
+$env:SPRING_PROFILES_ACTIVE = "render,supabase"
 $env:JWT_SECRET = "replace-with-a-long-random-secret-at-least-32-characters"
 
-# MySQL
-# Only needed when SPRING_PROFILES_ACTIVE includes "mysql".
-$env:MYSQL_HOST = "127.0.0.1"
-$env:MYSQL_PORT = "3306"
-$env:MYSQL_DB = "mutual_fund_db"
-$env:MYSQL_USERNAME = "root"
-$env:MYSQL_PASSWORD = "your_mysql_password"
+# Supabase PostgreSQL
+# Only needed when SPRING_PROFILES_ACTIVE includes "supabase".
+$env:SUPABASE_DB_HOST = "aws-1-ap-south-1.pooler.supabase.com"
+$env:SUPABASE_DB_PORT = "5432"
+$env:SUPABASE_DB_NAME = "postgres"
+$env:SUPABASE_DB_USER = "postgres.your-project-ref"
+$env:SUPABASE_DB_PASSWORD = "your_supabase_database_password"
+$env:SUPABASE_DB_SSLMODE = "require"
+$env:DB_POOL_MAX_SIZE = "5"
 
 # Mail
 $env:MAIL_ENABLED = "true"

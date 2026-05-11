@@ -9,6 +9,7 @@ import com.fsad.mutualfund.repository.MutualFundRepository;
 import com.fsad.mutualfund.utils.FinancialCalculator;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -60,7 +61,12 @@ public class ExternalMfService {
         int resolvedLimit = Math.max(1, Math.min(limit == null ? DEFAULT_LIMIT : limit, MAX_LIMIT));
         String normalizedQuery = normalizeQuery(query);
         boolean recentOnly = normalizedQuery.isBlank();
-        List<MfApiFundSummary> filteredSummaries = rankAndFilterFundSummaries(getAllFundSummaries(), query);
+        List<MfApiFundSummary> filteredSummaries;
+        try {
+            filteredSummaries = rankAndFilterFundSummaries(getAllFundSummaries(), query);
+        } catch (RestClientException ex) {
+            return getTrackedFundsFallback(query, category, maxRisk, resolvedLimit);
+        }
         int candidateLimit = determineCandidateLimit(resolvedLimit, query, category, maxRisk);
 
         List<FundResponse> funds = filteredSummaries.stream()
@@ -246,6 +252,43 @@ public class ExternalMfService {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    private List<FundResponse> getTrackedFundsFallback(String query, String category, Integer maxRisk, int limit) {
+        String normalizedQuery = normalizeQuery(query);
+
+        return fundRepository.findAll().stream()
+                .filter(fund -> normalizedQuery.isBlank()
+                        || normalizeQuery(fund.getFundName()).contains(normalizedQuery)
+                        || normalizeQuery(fund.getTickerSymbol()).contains(normalizedQuery)
+                        || normalizeQuery(fund.getExternalSchemeCode()).contains(normalizedQuery))
+                .filter(fund -> matchesCategory(fund, category))
+                .filter(fund -> maxRisk == null || fund.getRiskRating() <= maxRisk)
+                .sorted(Comparator
+                        .comparingInt((MutualFund fund) -> categoryPriority(fund.getCategory().name()))
+                        .thenComparing(MutualFund::getFundName, String.CASE_INSENSITIVE_ORDER))
+                .limit(limit)
+                .map(this::toTrackedFundResponse)
+                .collect(Collectors.toList());
+    }
+
+    private FundResponse toTrackedFundResponse(MutualFund fund) {
+        return FundResponse.builder()
+                .id(fund.getId())
+                .schemeCode(fund.getExternalSchemeCode())
+                .fundName(fund.getFundName())
+                .tickerSymbol(resolveTickerSymbol(fund))
+                .category(fund.getCategory().name())
+                .expenseRatio(fund.getExpenseRatio())
+                .riskRating(fund.getRiskRating())
+                .currentNav(fund.getCurrentNav())
+                .oneYearReturn(null)
+                .navDate(null)
+                .fundHouse(fund.getFundManager())
+                .fundManager(fund.getFundManager())
+                .description(fund.getDescription())
+                .minInvestment(fund.getMinInvestment())
+                .build();
     }
 
     private List<FundDetailResponse.NavPoint> buildNavHistory(MfApiFundDetail detail) {
@@ -503,6 +546,13 @@ public class ExternalMfService {
             return true;
         }
         return category.trim().equalsIgnoreCase(fund.getCategory());
+    }
+
+    private boolean matchesCategory(MutualFund fund, String category) {
+        if (isBlank(category)) {
+            return true;
+        }
+        return fund.getCategory() != null && category.trim().equalsIgnoreCase(fund.getCategory().name());
     }
 
     private String normalizeQuery(String value) {
