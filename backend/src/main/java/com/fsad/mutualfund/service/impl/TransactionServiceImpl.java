@@ -45,8 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
         InvestorProfile profile = investorProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Investor profile not found"));
 
-        MutualFund fund = fundRepository.findById(request.getFundId())
-                .orElseThrow(() -> new RuntimeException("Fund not found"));
+        MutualFund fund = resolveFund(request.getFundId());
 
         fund = refreshIfExternal(fund);
         BigDecimal amount = request.getAmount();
@@ -108,8 +107,7 @@ public class TransactionServiceImpl implements TransactionService {
         InvestorProfile profile = investorProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Investor profile not found"));
 
-        MutualFund fund = fundRepository.findById(request.getFundId())
-                .orElseThrow(() -> new RuntimeException("Fund not found"));
+        MutualFund fund = resolveFund(request.getFundId());
 
         PortfolioHolding holding = holdingRepository
                 .findByInvestorIdAndMutualFundId(userId, fund.getId())
@@ -171,6 +169,21 @@ public class TransactionServiceImpl implements TransactionService {
         if (fund == null || fund.getExternalSchemeCode() == null || fund.getExternalSchemeCode().isBlank()) {
             return fund;
         }
-        return externalMfService.refreshTrackedFund(fund.getExternalSchemeCode());
+
+        try {
+            return externalMfService.refreshTrackedFund(fund.getExternalSchemeCode());
+        } catch (RuntimeException ex) {
+            return fund;
+        }
+    }
+
+    private MutualFund resolveFund(Long fundIdOrSchemeCode) {
+        if (fundIdOrSchemeCode == null) {
+            throw new RuntimeException("Fund not found");
+        }
+
+        return fundRepository.findById(fundIdOrSchemeCode)
+                .or(() -> fundRepository.findByExternalSchemeCode(String.valueOf(fundIdOrSchemeCode)))
+                .orElseThrow(() -> new RuntimeException("Fund not found"));
     }
 }

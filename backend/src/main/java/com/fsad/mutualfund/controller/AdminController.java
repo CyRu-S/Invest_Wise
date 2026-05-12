@@ -9,6 +9,7 @@ import com.fsad.mutualfund.repository.AdminAuditLogRepository;
 import com.fsad.mutualfund.repository.AdvisorProfileRepository;
 import com.fsad.mutualfund.repository.InvestorProfileRepository;
 import com.fsad.mutualfund.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -99,11 +100,17 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{id}")
+    @Transactional
     public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long id, HttpServletRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found: " + id));
 
-        logAction(extractActor(request), user, "USER_DELETED", "USER", user.getEmail(), "Deleted user account");
+        adminAuditLogRepository.clearTargetUserReferences(user.getId());
+        adminAuditLogRepository.clearActorReferences(user.getId());
+        investorProfileRepository.deleteByUserId(user.getId());
+        advisorProfileRepository.deleteByUserId(user.getId());
+
+        logAction(extractActor(request), null, "USER_DELETED", "USER", user.getEmail(), "Deleted user account");
         userRepository.delete(user);
         return ResponseEntity.ok(ApiResponse.success("User deleted"));
     }

@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface InvestorProfileRepository extends JpaRepository<InvestorProfile, Long> {
     Optional<InvestorProfile> findByUserId(Long userId);
+    void deleteByUserId(Long userId);
 }
